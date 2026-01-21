@@ -17,36 +17,35 @@ The focus of the project is to build a clean, user-friendly application while ma
 ## 🛠 Technologies Used
 
 Python 3
--Tkinter – Graphical User Interface
--OpenCV (cv2) – Image processing
--NumPy – Image data manipulation
--Pillow (PIL) – Image rendering for Tkinter
--GitHub – Version control and collaboration
+- Tkinter – Graphical User Interface
+- OpenCV (cv2) – Image processing
+- NumPy – Image data manipulation
+- Pillow (PIL) – Image rendering for Tkinter
+- GitHub – Version control and collaboration
 
-📂 Project Structure
+## 📂 Project Structure
 assigment 3/
-│
-├── app.py                # Main Tkinter GUI and application logic
-├── image_processor.py    # OpenCV image processing operations
-├── history_manager.py    # Undo / Redo functionality
-├── main.py               # Application entry point
-├── requirements.txt      # Required Python libraries
-├── github_link.txt       # GitHub repository link
-└── README.md             # Project documentation
+app.py                # Main Tkinter GUI and application logic
+ image_processor.py    # OpenCV image processing operations
+ history_manager.py    # Undo / Redo functionality
+ main.py               # Application entry point
+requirements.txt      # Required Python libraries
+ github_link.txt       # GitHub repository link
+ README.md             # Project documentation
 
-🎯 Application Features
-🖼 Image Processing (OpenCV)
+## 🎯 Application Features
+### 🖼 Image Processing (OpenCV)
 
 The application supports the following image operations:
 
-1.Grayscale conversion
-2.Gaussian blur (adjustable intensity)
-3.Edge detection (Canny algorithm)
-4.Brightness adjustment
-5.Contrast adjustment
-6.Image rotation (90°, 180°, 270°)
-7.Image flip (horizontal / vertical)
-8.Resize / scale by percentage
+1. Grayscale conversion
+2. Gaussian blur (adjustable intensity)
+3. Edge detection (Canny algorithm)
+4. Brightness adjustment
+5. Contrast adjustment
+6. Image rotation (90°, 180°, 270°)
+7. Image flip (horizontal / vertical)
+8. Resize / scale by percentage
 
 All image processing logic is handled in a dedicated processing class, keeping the GUI code clean and maintainable.
 
