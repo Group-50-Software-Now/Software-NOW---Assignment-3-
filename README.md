@@ -25,13 +25,13 @@ Python 3
 
 ## 📂 Project Structure
 assigment 3/
-- app.py                # Main Tkinter GUI and application logic
- - image_processor.py    # OpenCV image processing operations
- - history_manager.py    # Undo / Redo functionality
- - main.py               # Application entry point
-- requirements.txt      # Required Python libraries
- - github_link.txt       # GitHub repository link
- - README.md             # Project documentation
+- app.py                                # Main Tkinter GUI and application logic
+ - image_processor.py                   # OpenCV image processing operations
+ - history_manager.py                   # Undo / Redo functionality
+ - main.py                              # Application entry point
+- requirements.txt                      # Required Python libraries
+ - github_link.txt                      # GitHub repository link
+ - README.md                            # Project documentation
 
 ## 🎯 Application Features
 ### 🖼 Image Processing (OpenCV)
@@ -80,7 +80,7 @@ The application is structured using multiple classes to clearly demonstrate OOP 
 ### ImageEditorApp
 Manages the GUI and user interactions
 
-#### ImageProcessor
+### ImageProcessor
 Handles all OpenCV image processing logic
 
 ### HistoryManager
