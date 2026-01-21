@@ -1,22 +1,33 @@
-# AI Image Editor – HIT137 Group Assignment 3
-📌 Overview
+🖼️ AI Image Editor
 
-This project is a desktop Image Editing Application developed as part of HIT137 – Software Now (Group Assignment 3).
-The application demonstrates the practical use of Object-Oriented Programming (OOP) concepts, Tkinter GUI development, and image processing using OpenCV.
+HIT137 – Software Now | Group Assignment 3
 
-The goal of the project is to design a clean, user-friendly desktop tool that allows users to load an image, apply multiple image processing effects, and save the results, while maintaining good software structure and code quality.
+📌 Project Overview
+
+This project is a desktop image editing application developed for HIT137 – Software Now (Group Assignment 3).
+The application demonstrates practical understanding of:
+
+Object-Oriented Programming (OOP)
+
+Tkinter GUI development
+
+Image processing using OpenCV
+
+Version control and collaboration using GitHub
+
+The focus of the project is to build a clean, user-friendly application while maintaining good software design, modular code structure, and readability.
 
 🛠 Technologies Used
 
 Python 3
 
-Tkinter – GUI development
+Tkinter – Graphical User Interface
 
 OpenCV (cv2) – Image processing
 
-NumPy – Image data handling
+NumPy – Image data manipulation
 
-Pillow (PIL) – Image display support in Tkinter
+Pillow (PIL) – Image rendering for Tkinter
 
 GitHub – Version control and collaboration
 
@@ -32,15 +43,15 @@ assigment 3/
 └── README.md             # Project documentation
 
 🎯 Application Features
-🖼 Image Processing Functions (OpenCV)
+🖼 Image Processing (OpenCV)
 
 The application supports the following image operations:
 
 Grayscale conversion
 
-Gaussian blur (adjustable)
+Gaussian blur (adjustable intensity)
 
-Edge detection (Canny)
+Edge detection (Canny algorithm)
 
 Brightness adjustment
 
@@ -52,9 +63,11 @@ Image flip (horizontal / vertical)
 
 Resize / scale by percentage
 
-All processing is handled through a dedicated processing class to keep the GUI logic clean and modular.
+All image processing logic is handled in a dedicated processing class, keeping the GUI code clean and maintainable.
 
-🧩 GUI Features (Tkinter)
+🧩 Graphical User Interface (Tkinter)
+
+The GUI includes all required elements:
 
 Main application window with proper sizing
 
@@ -70,21 +83,23 @@ Control panel with buttons and sliders
 
 Live slider previews for blur, brightness, and contrast
 
-Status bar showing:
+Status bar displaying:
 
 File name
 
 Image dimensions
 
-Undo/Redo availability
+Undo / Redo availability
 
 Last performed action
 
-Confirmation and error dialogs for better user experience
+Message boxes for errors, confirmations, and warnings
 
 🧠 Object-Oriented Design
 
-The project is structured using multiple classes to clearly demonstrate OOP concepts:
+The application is structured using multiple classes to clearly demonstrate OOP principles:
+
+Key Classes
 
 ImageEditorApp
 
@@ -96,50 +111,54 @@ Handles all OpenCV image processing logic
 
 HistoryManager
 
-Manages undo and redo operations using internal stacks
+Manages undo and redo functionality
 
-The design demonstrates:
+OOP Concepts Demonstrated
 
-Encapsulation
+Classes and objects
 
 Constructors
 
 Instance and class attributes
 
-Method-based interaction between classes
+Encapsulation
 
-Clean separation of responsibilities
+Method-based class interaction
+
+Clear separation of responsibilities
 
 ▶ How to Run the Application
-1️⃣ Install required libraries
+1️⃣ Install Required Libraries
 pip install -r requirements.txt
 
-2️⃣ Run the application
+2️⃣ Run the Application
 python main.py
 
 👥 Group Work & GitHub Usage
 
-This project is maintained in a public GitHub repository
+The project is maintained in a public GitHub repository
 
 All group members are added as collaborators
 
-Commits reflect continuous development from start to submission
+Commits show continuous development from start to submission
 
-GitHub is used to track progress, changes, and teamwork
+GitHub is used to track progress, collaboration, and contributions
 
 The repository link is provided in github_link.txt as required.
 
-✅ Notes
+📝 Notes
 
-The application supports common image formats: JPG, PNG, BMP
+Supported image formats: JPG, PNG, BMP
 
-Images are processed internally using OpenCV (BGR format) and converted to RGB only for display
+Images are processed internally using OpenCV (BGR format)
 
-Undo/Redo functionality allows safe experimentation with image effects
+Conversion to RGB is done only for display in Tkinter
 
-Code is documented with clear docstrings and comments for readability
+Undo / Redo allows safe experimentation with image edits
 
-📌 Conclusion
+Code is documented with clear, human-readable docstrings and comments
 
-This project demonstrates a complete desktop application built using Python, combining GUI development, image processing, and object-oriented programming principles.
-The focus was on writing clean, maintainable code while delivering all required functionality in a user-friendly interface.
+✅ Conclusion
+
+This project demonstrates a complete Python desktop application that integrates GUI development, image processing, and object-oriented programming principles.
+The focus was on producing clean, readable, and maintainable code while delivering all required functionality in a user-friendly interface.
