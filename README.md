@@ -1,35 +1,27 @@
-🖼️ AI Image Editor
+# AI Image Editor
 
-HIT137 – Software Now | Group Assignment 3
+## HIT137 – Software Now | Group Assignment 3
 
-📌 Project Overview
+### Project Overview
 
 This project is a desktop image editing application developed for HIT137 – Software Now (Group Assignment 3).
 The application demonstrates practical understanding of:
 
-Object-Oriented Programming (OOP)
-
-Tkinter GUI development
-
-Image processing using OpenCV
-
-Version control and collaboration using GitHub
+1. Object-Oriented Programming (OOP)
+2. Tkinter GUI development
+3. Image processing using OpenCV
+4. Version control and collaboration using GitHub
 
 The focus of the project is to build a clean, user-friendly application while maintaining good software design, modular code structure, and readability.
 
-🛠 Technologies Used
+## 🛠 Technologies Used
 
 Python 3
-
-Tkinter – Graphical User Interface
-
-OpenCV (cv2) – Image processing
-
-NumPy – Image data manipulation
-
-Pillow (PIL) – Image rendering for Tkinter
-
-GitHub – Version control and collaboration
+-Tkinter – Graphical User Interface
+-OpenCV (cv2) – Image processing
+-NumPy – Image data manipulation
+-Pillow (PIL) – Image rendering for Tkinter
+-GitHub – Version control and collaboration
 
 📂 Project Structure
 assigment 3/
@@ -47,25 +39,18 @@ assigment 3/
 
 The application supports the following image operations:
 
-Grayscale conversion
-
-Gaussian blur (adjustable intensity)
-
-Edge detection (Canny algorithm)
-
-Brightness adjustment
-
-Contrast adjustment
-
-Image rotation (90°, 180°, 270°)
-
-Image flip (horizontal / vertical)
-
-Resize / scale by percentage
+1.Grayscale conversion
+2.Gaussian blur (adjustable intensity)
+3.Edge detection (Canny algorithm)
+4.Brightness adjustment
+5.Contrast adjustment
+6.Image rotation (90°, 180°, 270°)
+7.Image flip (horizontal / vertical)
+8.Resize / scale by percentage
 
 All image processing logic is handled in a dedicated processing class, keeping the GUI code clean and maintainable.
 
-🧩 Graphical User Interface (Tkinter)
+## 🧩 Graphical User Interface (Tkinter)
 
 The GUI includes all required elements:
 
