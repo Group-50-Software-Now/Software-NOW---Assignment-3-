@@ -60,7 +60,7 @@ class ImageEditorApp:
     SUPPORTED_FORMATS = [("Image Files", "*.jpg *.jpeg *.png *.bmp")]
 
     def __init__(self) -> None:
-        """
+        """  
         Constructor for the application.
 
         Sets up:
