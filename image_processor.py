@@ -1,24 +1,4 @@
-"""
-image_processor.py
 
-This module contains all image processing logic for the application.
-It acts as a dedicated processing layer between the GUI (Tkinter)
-and the OpenCV library.
-
-The GUI should never directly call OpenCV functions.
-Instead, it communicates with this class, which keeps the code clean,
-modular, and easy to maintain.
-
-Supported image operations:
-- Grayscale conversion
-- Gaussian blur
-- Edge detection (Canny)
-- Brightness adjustment
-- Contrast adjustment
-- Rotation (90°, 180°, 270°)
-- Flip (horizontal / vertical)
-- Resize / scale by percentage
-"""
 
 from __future__ import annotations
 from typing import Tuple
