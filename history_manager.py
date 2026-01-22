@@ -1,8 +1,3 @@
-"""
-history_manager.py
-
-Undo/Redo history manager.
-
 This class stores snapshots of images so users can undo and redo changes.
 It uses two stacks:
 - undo stack: previous states
@@ -25,7 +20,7 @@ class HistoryManager:
     The stacks are private to protect them from accidental outside modifications.
     """
 
-    def __init__(self, max_states: int = 25) -> None:
+ def __init__(self, max_states: int = 25) -> None:
         """
         Args:
             max_states: Maximum number of undo states to keep in memory.
