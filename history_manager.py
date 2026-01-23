@@ -19,4 +19,13 @@ class HistoryManager:
 
     The stacks are private to protect them from accidental outside modifications.
     """
+    def __init__(self, max_states: int = 25) -> None:
+        """
+        Args:
+            max_states: Maximum number of undo states to keep in memory.
+        """
+        self.__undo_stack: List[np.ndarray] = []
+        self.__redo_stack: List[np.ndarray] = []
+        self.max_states = max_states
 
+    def clear(self) -> None:
