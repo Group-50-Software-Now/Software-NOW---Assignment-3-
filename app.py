@@ -72,8 +72,7 @@ class ImageEditorApp:
         # -------------------------
         # Window setup
         # -------------------------
-        self.root = tk.Tk()
-        self.root.title("AI Image Editor (Tkinter + OpenCV)")
+         self.root.title("AI Image Editor (Tkinter + OpenCV)")
         self.root.geometry("1100x700")
         self.root.minsize(900, 600)
 
