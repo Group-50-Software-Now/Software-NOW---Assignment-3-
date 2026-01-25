@@ -29,3 +29,17 @@ class HistoryManager:
         self.max_states = max_states
 
     def clear(self) -> None:
+    """Clear all history (useful when opening a new image)."""
+        self.__undo_stack.clear()
+        self.__redo_stack.clear()
+
+    def push(self, img: np.ndarray) -> None:
+        """
+        Save the current image state into undo history.
+
+        Note:
+        - whenever a new change happens, redo history becomes invalid and is cleared.
+        """
+        if img is None:
+            return
+
