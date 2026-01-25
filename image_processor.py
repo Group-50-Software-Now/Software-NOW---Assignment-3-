@@ -20,23 +20,6 @@ Supported image operations:
 - Resize / scale by percentage
 """
 
-from __future__ import annotations
-from typing import Tuple
-import cv2
-import numpy as np
-
-
-class ImageProcessor:
-    """
-    Image processing helper class using OpenCV.
-
-    Images are stored internally as:
-    - NumPy arrays
-    - BGR colour format (OpenCV default)
-
-    When images are displayed in Tkinter,
-    they are converted to RGB in the GUI layer.
-    """
 
     # Default threshold values used for Canny edge detection
     DEFAULT_CANNY: Tuple[int, int] = (80, 160)
