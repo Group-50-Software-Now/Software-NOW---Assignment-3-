@@ -72,7 +72,32 @@ class ImageEditorApp:
         # -------------------------
         # Window setup
         # -------------------------
+        self.root.title("AI Image Editor (Tkinter + OpenCV)") 
+        self.root.geometry("1100x700") 
+        self.root.minsize(900, 600) 
+
         
+        # ------------------------- 
+        # Core components 
+        # ------------------------- 
+        self.processor = ImageProcessor() self.history = HistoryManager(max_states=25)
+
+        
+        
+        # ------------------------- 
+        # Application state 
+        # ------------------------- 
+        self.current_image: Optional[np.ndarray] = None 
+        self.current_path: Optional[str] = None 
+        self.info = ImageInfo() 
+        # These help drive the status bar and exit prompts 
+        self.is_modified = False self.last_action = "Ready"
+        
+        # Tkinter PhotoImage must be stored as an attribute, 
+        # otherwise it can get garbage collected and disappear from the UI. 
+        
+        self._tk_img: Optional[ImageTk.PhotoImage] = None
+        # Slider session support:
         # When the user drags a slider, we preview the effect live,
         # but commit it as ONE history item once they release the mouse.
         self._slider_base_image: Optional[np.ndarray] = None
