@@ -149,7 +149,35 @@ class ImageEditorApp:
         edit_menu.add_command(label="Redo", command=self.redo)
         menubar.add_cascade(label="Edit", menu=edit_menu)
 
-        
+              self.root.config(menu=menubar)
+
+    def _build_layout(self) -> None:
+        """
+        Build the main layout frames.
+
+        Layout design:
+        - Left side: control panel (buttons and sliders)
+        - Right side: canvas to display the image
+        - Bottom: status bar for file info + undo/redo + last action
+        """
+        self.main_frame = tk.Frame(self.root)
+        self.main_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Control panel on the left
+        self.control_frame = tk.Frame(self.main_frame, width=320, padx=10, pady=10)
+        self.control_frame.pack(side=tk.LEFT, fill=tk.Y)
+
+        # Display area on the right
+        self.display_frame = tk.Frame(self.main_frame, padx=10, pady=10)
+        self.display_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        # Canvas is where the image is drawn
+        self.canvas = tk.Canvas(self.display_frame, bg="#222222", highlightthickness=0)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+
+        # Status bar at the bottom
+        self.status_var = tk.StringVar()
+        self.status_bar = tk.Label(
             self.root,
             textvariable=self.status_var,
             anchor="w",
