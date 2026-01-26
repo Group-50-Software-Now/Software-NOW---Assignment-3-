@@ -38,36 +38,7 @@ class ImageProcessor:
     they are converted to RGB in the GUI layer.
     """
 
-    # Default threshold values used for Canny edge detection
-    DEFAULT_CANNY: Tuple[int, int] = (80, 160)
-
-    def __init__(self) -> None:
-        """
-        Constructor.
-
-        The last_action attribute is useful for debugging
-        or for displaying status messages in the GUI.
-        """
-        self.last_action: str = "Ready"
-
-    
-    # File Input / Output
-    
-
-    def read_image(self, path: str) -> np.ndarray:
-        """
-        Read an image from disk using OpenCV.
-
-        Args:
-            path: Full file path to the image.
-
-        Returns:
-            Image as a NumPy array in BGR format.
-
-        Raises:
-            ValueError: If the image cannot be loaded.
-        """
-        img = cv2.imread(path)
+   
 
         # If OpenCV fails to read the image, img will be None
         if img is None:
