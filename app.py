@@ -203,7 +203,31 @@ class ImageEditorApp:
         # -------------------------
         # One-click buttons
         # -------------------------
-        
+        tk.Button(self.control_frame, text="Grayscale", command=self.apply_grayscale).pack(fill=tk.X, pady=2)
+        tk.Button(self.control_frame, text="Edge Detection", command=self.apply_edges).pack(fill=tk.X, pady=2)
+
+        # -------------------------
+        # Rotation buttons
+        # -------------------------
+        rotate_frame = tk.LabelFrame(self.control_frame, text="Rotate")
+        rotate_frame.pack(fill=tk.X, pady=8)
+
+        tk.Button(rotate_frame, text="90°", command=lambda: self.apply_rotate(90)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2, pady=4)
+        tk.Button(rotate_frame, text="180°", command=lambda: self.apply_rotate(180)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2, pady=4)
+        tk.Button(rotate_frame, text="270°", command=lambda: self.apply_rotate(270)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2, pady=4)
+
+        # -------------------------
+        # Flip buttons
+        # -------------------------
+        flip_frame = tk.LabelFrame(self.control_frame, text="Flip")
+        flip_frame.pack(fill=tk.X, pady=8)
+
+        tk.Button(flip_frame, text="Horizontal", command=lambda: self.apply_flip("horizontal")).pack(fill=tk.X, padx=2, pady=2)
+        tk.Button(flip_frame, text="Vertical", command=lambda: self.apply_flip("vertical")).pack(fill=tk.X, padx=2, pady=2)
+
+        # -------------------------
+        # Adjustment sliders
+        # -------------------------
         slider_frame = tk.LabelFrame(self.control_frame, text="Adjustments")
         slider_frame.pack(fill=tk.X, pady=10)
 
