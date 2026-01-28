@@ -248,31 +248,7 @@ class ImageEditorApp:
         )
         self.blur_scale.pack(fill=tk.X)
 
-        # --- Brightness ---
-        self.bright_var = tk.IntVar(value=0)
-        self.bright_label = tk.Label(slider_frame, text="Brightness: 0", anchor="w")
-        self.bright_label.pack(fill=tk.X, pady=(6, 0))
-
-        self.bright_scale = tk.Scale(
-            slider_frame,
-            from_=-100,
-            to=100,
-            orient=tk.HORIZONTAL,
-            variable=self.bright_var,
-            showvalue=False
-        )
-        self.bright_scale.pack(fill=tk.X)
-
-        # --- Contrast ---
-        self.contrast_var = tk.IntVar(value=100)
-        self.contrast_label = tk.Label(slider_frame, text="Contrast: 100", anchor="w")
-        self.contrast_label.pack(fill=tk.X, pady=(6, 0))
-
-        self.contrast_scale = tk.Scale(
-            slider_frame,
-            from_=0,
-            to=200,
-            orient=tk.HORIZONTAL,
+        
             variable=self.contrast_var,
             showvalue=False
         )
