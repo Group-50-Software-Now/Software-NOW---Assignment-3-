@@ -1,6 +1,5 @@
 """
 app.py
-
 Tkinter GUI for a simple image editor.
 
 This file is responsible for the user interface side of the project:
@@ -14,9 +13,7 @@ Important note:
 OpenCV images are stored in BGR format, while PIL/Tkinter display expects RGB.
 So we convert BGR -> RGB only at the moment we render to the canvas.
 """
-
 from __future__ import annotations
-
 import os
 from dataclasses import dataclass
 from typing import Optional
@@ -69,24 +66,16 @@ class ImageEditorApp:
         - initial state variables
         - all GUI elements
         """
-        # -------------------------
         # Window setup
-        # -------------------------
         self.root.title("AI Image Editor (Tkinter + OpenCV)") 
         self.root.geometry("1100x700") 
         self.root.minsize(900, 600) 
-
-        
-        # ------------------------- 
+   
         # Core components 
-        # ------------------------- 
+       
         self.processor = ImageProcessor() self.history = HistoryManager(max_states=25)
-
-        
-        
-        # ------------------------- 
+       
         # Application state 
-        # ------------------------- 
         self.current_image: Optional[np.ndarray] = None 
         self.current_path: Optional[str] = None 
         self.info = ImageInfo() 
@@ -102,10 +91,8 @@ class ImageEditorApp:
         # but commit it as ONE history item once they release the mouse.
         self._slider_base_image: Optional[np.ndarray] = None
         self._active_slider: Optional[str] = None  # blur/brightness/contrast
-
-        # -------------------------
+        
         # Build the UI
-        # -------------------------
         self._build_menu()
         self._build_layout()
         self._build_controls()
@@ -122,7 +109,7 @@ class ImageEditorApp:
         """
         self.root.mainloop()
 
-    # ---------------- GUI BUILD ----------------
+    # GUI BUILD 
 
     def _build_menu(self) -> None:
         """
@@ -200,15 +187,12 @@ class ImageEditorApp:
         """
         tk.Label(self.control_frame, text="Controls", font=("Segoe UI", 14, "bold")).pack(anchor="w", pady=(0, 10))
 
-        # -------------------------
         # One-click buttons
-        # -------------------------
         tk.Button(self.control_frame, text="Grayscale", command=self.apply_grayscale).pack(fill=tk.X, pady=2)
         tk.Button(self.control_frame, text="Edge Detection", command=self.apply_edges).pack(fill=tk.X, pady=2)
 
-        # -------------------------
+      
         # Rotation buttons
-        # -------------------------
         rotate_frame = tk.LabelFrame(self.control_frame, text="Rotate")
         rotate_frame.pack(fill=tk.X, pady=8)
 
@@ -216,22 +200,18 @@ class ImageEditorApp:
         tk.Button(rotate_frame, text="180°", command=lambda: self.apply_rotate(180)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2, pady=4)
         tk.Button(rotate_frame, text="270°", command=lambda: self.apply_rotate(270)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2, pady=4)
 
-        # -------------------------
         # Flip buttons
-        # -------------------------
         flip_frame = tk.LabelFrame(self.control_frame, text="Flip")
         flip_frame.pack(fill=tk.X, pady=8)
 
         tk.Button(flip_frame, text="Horizontal", command=lambda: self.apply_flip("horizontal")).pack(fill=tk.X, padx=2, pady=2)
         tk.Button(flip_frame, text="Vertical", command=lambda: self.apply_flip("vertical")).pack(fill=tk.X, padx=2, pady=2)
 
-        # -------------------------
         # Adjustment sliders
-        # -------------------------
         slider_frame = tk.LabelFrame(self.control_frame, text="Adjustments")
         slider_frame.pack(fill=tk.X, pady=10)
 
-        # --- Blur ---
+        #  Blur
         self.blur_var = tk.IntVar(value=0)
         self.blur_label = tk.Label(slider_frame, text="Blur: 0", anchor="w")
         self.blur_label.pack(fill=tk.X)
@@ -248,7 +228,7 @@ class ImageEditorApp:
         )
         self.blur_scale.pack(fill=tk.X)
 
-        # --- Brightness ---
+        # Brightness 
         self.bright_var = tk.IntVar(value=0)
         self.bright_label = tk.Label(slider_frame, text="Brightness: 0", anchor="w")
         self.bright_label.pack(fill=tk.X, pady=(6, 0))
@@ -263,7 +243,7 @@ class ImageEditorApp:
         )
         self.bright_scale.pack(fill=tk.X)
 
-        # --- Contrast ---
+        #Contrast 
         self.contrast_var = tk.IntVar(value=100)
         self.contrast_label = tk.Label(slider_frame, text="Contrast: 100", anchor="w")
         self.contrast_label.pack(fill=tk.X, pady=(6, 0))
@@ -297,9 +277,7 @@ class ImageEditorApp:
         self.bright_var.trace_add("write", lambda *_: self._on_slider_value_change())
         self.contrast_var.trace_add("write", lambda *_: self._on_slider_value_change())
 
-        # -------------------------
         # Resize controls
-        # -------------------------
         resize_frame = tk.LabelFrame(self.control_frame, text="Resize / Scale")
         resize_frame.pack(fill=tk.X, pady=10)
 
@@ -329,7 +307,7 @@ class ImageEditorApp:
         # Ensure labels match initial values right from the start
         self._refresh_slider_labels()
 
-    # ---------------- Slider label helpers ----------------
+    #  Slider label helpers 
 
     def _refresh_slider_labels(self) -> None:
         """
@@ -364,7 +342,7 @@ class ImageEditorApp:
         self._refresh_slider_labels()
         self._preview_slider_effect()
 
-    # ---------------- File actions ----------------
+    # File actions 
 
     def open_image(self) -> None:
         """
@@ -455,7 +433,7 @@ class ImageEditorApp:
                 return
         self.root.destroy()
 
-    # ---------------- Undo/Redo ----------------
+    # Undo/Redo
 
     def undo(self) -> None:
         """Undo the last edit (if possible)."""
@@ -489,7 +467,7 @@ class ImageEditorApp:
         self._update_info_from_image()
         self._render_image()
 
-    # ---------------- Apply changes ----------------
+    # Apply changes 
 
     def _require_image(self) -> bool:
         """
@@ -570,7 +548,7 @@ class ImageEditorApp:
         self.last_action = "Sliders reset"
         self._update_status()
 
-    # ---------------- Slider preview ----------------
+    # Slider preview
 
     def _start_slider_edit(self, slider_name: str) -> None:
         """
@@ -632,7 +610,7 @@ class ImageEditorApp:
         self._update_info_from_image()
         self._render_image()
 
-    # ---------------- Display + status ----------------
+    # Display + status
 
     def _update_info_from_image(self) -> None:
         """Update filename and dimensions in the status bar."""
