@@ -14,7 +14,7 @@ The application demonstrates practical understanding of:
 
 The focus of the project is to build a clean, user-friendly application while maintaining good software design, modular code structure, and readability.
 
-## 🛠 Technologies Used
+## Technologies Used
 
 Python 3
 - Tkinter – Graphical User Interface
@@ -23,7 +23,7 @@ Python 3
 - Pillow (PIL) – Image rendering for Tkinter
 - GitHub – Version control and collaboration
 
-## 📂 Project Structure
+## Project Structure
 assigment 3/
 - app.py                                # Main Tkinter GUI and application logic
  - image_processor.py                   # OpenCV image processing operations
@@ -33,8 +33,8 @@ assigment 3/
  - github_link.txt                      # GitHub repository link
  - README.md                            # Project documentation
 
-## 🎯 Application Features
-### 🖼 Image Processing (OpenCV)
+##  Application Features
+###  Image Processing (OpenCV)
 
 The application supports the following image operations:
 
@@ -49,7 +49,7 @@ The application supports the following image operations:
 
 All image processing logic is handled in a dedicated processing class, keeping the GUI code clean and maintainable.
 
-## 🧩 Graphical User Interface (Tkinter)
+##  Graphical User Interface (Tkinter)
 
 The GUI includes all required elements:
 
@@ -71,7 +71,7 @@ Main application window with proper sizing
 - Last performed action
 - Message boxes for errors, confirmations, and warnings
 
-## 🧠 Object-Oriented Design
+##  Object-Oriented Design
 
 The application is structured using multiple classes to clearly demonstrate OOP principles:
 
@@ -103,7 +103,7 @@ pip install -r requirements.txt
 ### 2️⃣ Run the Application
 python main.py
 
-## 👥 Group Work & GitHub Usage
+##  Group Work & GitHub Usage
 
 The project is maintained in a public GitHub repository
 
@@ -112,7 +112,7 @@ The project is maintained in a public GitHub repository
 - GitHub is used to track progress, collaboration, and contributions
 - The repository link is provided in github_link.txt as required.
 
-## 📝 Notes
+##  Notes
 
 - Supported image formats: JPG, PNG, BMP
 - Images are processed internally using OpenCV (BGR format)
@@ -120,6 +120,6 @@ The project is maintained in a public GitHub repository
 - Undo / Redo allows safe experimentation with image edits
 - Code is documented with clear, human-readable docstrings and comments
 
-## ✅ Conclusion
+##  Conclusion
 This project demonstrates a complete Python desktop application that integrates GUI development, image processing, and object-oriented programming principles.
 The focus was on producing clean, readable, and maintainable code while delivering all required functionality in a user-friendly interface.
