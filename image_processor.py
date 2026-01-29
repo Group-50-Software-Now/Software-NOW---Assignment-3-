@@ -67,4 +67,34 @@ class ImageProcessor:
         Raises:
             ValueError: If the image cannot be loaded.
         """
+          img = cv2.imread(path)
+
         
+        # If OpenCV fails to read the image, img will be None
+        if img is None:
+            raise ValueError(
+                "OpenCV could not read this image. "
+                "The file may be unsupported or corrupted."
+            )
+
+        self.last_action = "Opened image"
+        return img
+
+    def write_image(self, path: str, img: np.ndarray) -> None:
+        """
+        Save an image to disk using OpenCV.
+
+        Args:
+            path: Destination file path.
+            img: Image data in BGR format.
+
+        Raises:
+            ValueError: If saving fails.
+        """
+        ok = cv2.imwrite(path, img)
+
+        # cv2.imwrite returns False if saving fails
+        if not ok:
+            raise ValueError(
+                "OpenCV could not save the image. "
+               
