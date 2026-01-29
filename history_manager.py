@@ -42,4 +42,18 @@ class HistoryManager:
         """
         if img is None:
             return
+    self.__undo_stack.append(img.copy())
+        self.__redo_stack.clear()
+
+        # Keep memory under control
+        if len(self.__undo_stack) > self.max_states:
+            self.__undo_stack.pop(0)
+
+    def can_undo(self) -> bool:
+        """Return True if undo is possible."""
+        return len(self.__undo_stack) > 0
+
+    def can_redo(self) -> bool:
+        """Return True if redo is possible."""
+        return len(self.__redo_stack) > 0
 
