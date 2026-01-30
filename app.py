@@ -1,26 +1,34 @@
 """
 app.py
+
 Tkinter GUI for a simple image editor.
 
-This file is responsible for the user interface side of the project:
-- Menus: Open / Save / Save As / Exit + Undo / Redo
-- Buttons: one-click actions like grayscale, edges, rotate, flip, resize
-- Sliders: adjustable values for blur, brightness, and contrast
-- Canvas: shows the current working image
-- Status bar: shows filename, dimensions, undo/redo availability, and last action
+This file handles:
+- menus (Open/Save/Save As/Exit, Undo/Redo)
+- buttons for one-click actions (grayscale, edges, rotate, flip, resize)
+- sliders for adjustable effects (blur, brightness, contrast)
+- displaying the image on a canvas
+- a status bar showing filename, size, and last action
 
-Important note:
-OpenCV images are stored in BGR format, while PIL/Tkinter display expects RGB.
-So we convert BGR -> RGB only at the moment we render to the canvas.
+OpenCV uses BGR images, but Tkinter/PIL expects RGB for display.
+So we convert BGR -> RGB only when rendering.
+
+UI goals for this version:
+- modern dark theme
+- colourful heading (more "real app" feel)
+- scrollable sidebar (so it still looks good on small screens)
+- clean value labels for sliders (no ugly 0..200 text on the side)
 """
+
 from __future__ import annotations
+
 import os
 from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 from PIL import Image, ImageTk
 
 from image_processor import ImageProcessor
@@ -29,238 +37,326 @@ from history_manager import HistoryManager
 
 @dataclass
 class ImageInfo:
-    """
-    Small container used for status bar info.
-
-    It keeps the status bar logic tidy instead of passing raw variables around.
-    """
-    filename: str = "No file"
+    """Small container for what we show in the status bar."""
+    filename: str = "No file loaded"
     width: int = 0
     height: int = 0
 
 
 class ImageEditorApp:
     """
-    Main GUI class for the image editor.
+    Main GUI application class.
 
-    This class is designed to:
-    - manage application state (current image, file path, modified state)
-    - build the interface (menu, controls, canvas, status bar)
-    - act as a coordinator between:
-        * ImageProcessor (OpenCV operations)
-        * HistoryManager (Undo/Redo)
-
-    The key idea is separation of concerns:
-    GUI stays here, image processing stays in image_processor.py.
+    This class is responsible for:
+    - all Tkinter UI layout and styling
+    - user input events (buttons, sliders, menus)
+    - calling ImageProcessor for OpenCV effects
+    - calling HistoryManager for Undo/Redo
     """
 
     SUPPORTED_FORMATS = [("Image Files", "*.jpg *.jpeg *.png *.bmp")]
 
-    def __init__(self) -> None:
-        """  
-        Constructor for the application.
+    # ---- Theme colours (kept here so you can tweak in one place) ----
+    BG = "#0b1020"         # main background
+    PANEL = "#0f172a"      # sidebar / cards
+    CARD = "#111c33"       # slightly lighter panel block
+    TEXT = "#e5e7eb"       # main text
+    MUTED = "#94a3b8"      # muted text
+    ACCENT = "#22c55e"     # green accent
 
-        Sets up:
-        - the main window
-        - core helper objects (processor, history)
-        - initial state variables
-        - all GUI elements
-        """
-        # Window setup
-        self.root.title("AI Image Editor (Tkinter + OpenCV)") 
-        self.root.geometry("1100x700") 
-        self.root.minsize(900, 600) 
-   
-        # Core components 
-       
-        self.processor = ImageProcessor() self.history = HistoryManager(max_states=25)
-       
-        # Application state 
-        self.current_image: Optional[np.ndarray] = None 
-        self.current_path: Optional[str] = None 
-        self.info = ImageInfo() 
-        # These help drive the status bar and exit prompts 
-        self.is_modified = False self.last_action = "Ready"
-        
-        # Tkinter PhotoImage must be stored as an attribute, 
-        # otherwise it can get garbage collected and disappear from the UI. 
-        
+    def __init__(self) -> None:
+        # ------------ Core state ------------
+        self.root = tk.Tk()
+        self.root.title("AI Image Editor (Tkinter + OpenCV)")
+        self.root.geometry("1180x740")
+        self.root.minsize(980, 620)
+        self.root.configure(bg=self.BG)
+
+        # Processing + history objects (class interaction requirement)
+        self.processor = ImageProcessor()
+        self.history = HistoryManager(max_states=25)
+
+        self.current_image: Optional[np.ndarray] = None
+        self.current_path: Optional[str] = None
+        self.info = ImageInfo()
+
+        self.is_modified: bool = False
+        self.last_action: str = "Ready"
+
+        # Tkinter ImageTk reference (if we don't store this, Tkinter may not display it)
         self._tk_img: Optional[ImageTk.PhotoImage] = None
-        # Slider session support:
-        # When the user drags a slider, we preview the effect live,
-        # but commit it as ONE history item once they release the mouse.
+
+        # Slider edit session state
+        # We preview live while dragging, but commit as ONE undo step at release.
+        self._active_slider: Optional[str] = None          # "blur", "brightness", "contrast"
         self._slider_base_image: Optional[np.ndarray] = None
-        self._active_slider: Optional[str] = None  # blur/brightness/contrast
-        
-        # Build the UI
+
+        # ------------ UI setup ------------
+        self._setup_styles()
         self._build_menu()
         self._build_layout()
         self._build_controls()
-        self._update_status()
 
-        # Intercept closing the window so we can warn about unsaved changes
+        # Status shown immediately
+        self._update_status()
+        self._render_image()  # shows welcome screen text
+
+        # Confirm close
         self.root.protocol("WM_DELETE_WINDOW", self._on_exit)
 
-    def run(self) -> None:
-        """
-        Start the Tkinter main loop.
+        # Keyboard shortcuts (feels like a real desktop app)
+        self.root.bind_all("<Control-o>", lambda _e: self.open_image())
+        self.root.bind_all("<Control-s>", lambda _e: self.save_image())
+        self.root.bind_all("<Control-Shift-S>", lambda _e: self.save_as_image())
+        self.root.bind_all("<Control-z>", lambda _e: self.undo())
+        self.root.bind_all("<Control-y>", lambda _e: self.redo())
 
-        This keeps the window alive and listens for user input (clicks, slider moves, etc).
-        """
+    def run(self) -> None:
+        """Start Tkinter main loop."""
         self.root.mainloop()
 
-    # GUI BUILD 
+    # ------------------------ Styling ------------------------
+
+    def _setup_styles(self) -> None:
+        """
+        Configure ttk styles.
+
+        ttk styling is a bit "manual", but once it’s set up,
+        the app looks cleaner and more consistent.
+        """
+        style = ttk.Style()
+        style.theme_use("clam")
+
+        style.configure("TFrame", background=self.BG)
+        style.configure("Card.TFrame", background=self.PANEL)
+
+        style.configure("TLabel", background=self.BG, foreground=self.TEXT, font=("Segoe UI", 10))
+        style.configure("Muted.TLabel", background=self.BG, foreground=self.MUTED, font=("Segoe UI", 10))
+        style.configure("SubTitle.TLabel", background=self.BG, foreground=self.MUTED, font=("Segoe UI", 10))
+
+        style.configure("TButton", font=("Segoe UI", 10, "bold"), padding=9)
+        style.map("TButton",
+                  background=[("active", self.CARD)],
+                  foreground=[("active", self.TEXT)])
+
+        style.configure("TLabelframe", background=self.PANEL, foreground=self.TEXT, borderwidth=0)
+        style.configure("TLabelframe.Label", background=self.PANEL, foreground=self.TEXT,
+                        font=("Segoe UI", 10, "bold"))
+
+        style.configure("Vertical.TScrollbar", background=self.PANEL, troughcolor=self.BG)
+
+    # ------------------------ Menu ------------------------
 
     def _build_menu(self) -> None:
-        """
-        Build the menu bar.
-
-        Two menus are required:
-        - File: Open, Save, Save As, Exit
-        - Edit: Undo, Redo
-        """
+        """Build menu bar: File + Edit (Undo/Redo)."""
         menubar = tk.Menu(self.root)
 
-        # File menu
         file_menu = tk.Menu(menubar, tearoff=False)
-        file_menu.add_command(label="Open", command=self.open_image)
-        file_menu.add_command(label="Save", command=self.save_image)
-        file_menu.add_command(label="Save As", command=self.save_as_image)
+        file_menu.add_command(label="Open (Ctrl+O)", command=self.open_image)
+        file_menu.add_command(label="Save (Ctrl+S)", command=self.save_image)
+        file_menu.add_command(label="Save As (Ctrl+Shift+S)", command=self.save_as_image)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self._on_exit)
         menubar.add_cascade(label="File", menu=file_menu)
 
-        # Edit menu
         edit_menu = tk.Menu(menubar, tearoff=False)
-        edit_menu.add_command(label="Undo", command=self.undo)
-        edit_menu.add_command(label="Redo", command=self.redo)
+        edit_menu.add_command(label="Undo (Ctrl+Z)", command=self.undo)
+        edit_menu.add_command(label="Redo (Ctrl+Y)", command=self.redo)
         menubar.add_cascade(label="Edit", menu=edit_menu)
 
-              self.root.config(menu=menubar)
+        self.root.config(menu=menubar)
+
+    # ------------------------ Layout ------------------------
 
     def _build_layout(self) -> None:
         """
-        Build the main layout frames.
-
-        Layout design:
-        - Left side: control panel (buttons and sliders)
-        - Right side: canvas to display the image
-        - Bottom: status bar for file info + undo/redo + last action
+        Create the main layout:
+        - Header
+        - Main body: Sidebar (left) + Canvas display (right)
+        - Status bar
         """
-        self.main_frame = tk.Frame(self.root)
-        self.main_frame.pack(fill=tk.BOTH, expand=True)
+        # ----- Header -----
+        header = ttk.Frame(self.root)
+        header.pack(fill=tk.X, padx=14, pady=(14, 10))
 
-        # Control panel on the left
-        self.control_frame = tk.Frame(self.main_frame, width=320, padx=10, pady=10)
-        self.control_frame.pack(side=tk.LEFT, fill=tk.Y)
+        # We use a canvas for the title so we can colour different words.
+        brand = tk.Canvas(header, height=54, bg=self.BG, highlightthickness=0)
+        brand.pack(fill=tk.X)
 
-        # Display area on the right
-        self.display_frame = tk.Frame(self.main_frame, padx=10, pady=10)
+        x = 8
+        y = 28
+        brand.create_text(x, y, text="AI", fill=self.ACCENT, font=("Segoe UI", 26, "bold"), anchor="w")
+        brand.create_text(x + 44, y, text=" Image", fill=self.TEXT, font=("Segoe UI", 26, "bold"), anchor="w")
+        brand.create_text(x + 156, y, text=" Editor", fill="#a78bfa", font=("Segoe UI", 26, "bold"), anchor="w")
+        brand.create_line(8, 48, 220, 48, fill=self.ACCENT, width=3)
+
+        subtitle = ttk.Label(
+            header,
+            text="HIT137 • Desktop Image Editor (Tkinter + OpenCV) • Undo/Redo supported",
+            style="SubTitle.TLabel",
+        )
+        subtitle.pack(anchor="w", padx=6, pady=(2, 0))
+
+        # ----- Main body -----
+        self.main_frame = ttk.Frame(self.root)
+        self.main_frame.pack(fill=tk.BOTH, expand=True, padx=14, pady=(0, 12))
+
+        # Sidebar outer
+        self.control_frame = ttk.Frame(self.main_frame, style="Card.TFrame")
+        self.control_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 12))
+
+        # Scrollable sidebar (canvas + scrollbar)
+        self.sidebar_canvas = tk.Canvas(
+            self.control_frame,
+            bg=self.PANEL,
+            highlightthickness=0,
+            width=340
+        )
+        self.sidebar_canvas.pack(side=tk.LEFT, fill=tk.Y, expand=False)
+
+        sidebar_scroll = ttk.Scrollbar(self.control_frame, orient="vertical", command=self.sidebar_canvas.yview)
+        sidebar_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.sidebar_canvas.configure(yscrollcommand=sidebar_scroll.set)
+
+        # Inner sidebar content frame
+        self.sidebar_inner = ttk.Frame(self.sidebar_canvas, style="Card.TFrame")
+        self.sidebar_window = self.sidebar_canvas.create_window((0, 0), window=self.sidebar_inner, anchor="nw")
+
+        def _on_sidebar_config(_e=None):
+            self.sidebar_canvas.configure(scrollregion=self.sidebar_canvas.bbox("all"))
+            self.sidebar_canvas.itemconfig(self.sidebar_window, width=self.sidebar_canvas.winfo_width())
+
+        self.sidebar_inner.bind("<Configure>", _on_sidebar_config)
+        self.sidebar_canvas.bind("<Configure>", _on_sidebar_config)
+
+        # Right: display frame and canvas
+        self.display_frame = ttk.Frame(self.main_frame)
         self.display_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        # Canvas is where the image is drawn
-        self.canvas = tk.Canvas(self.display_frame, bg="#222222", highlightthickness=0)
+        self.canvas = tk.Canvas(self.display_frame, bg="#060812", highlightthickness=0)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
-        # Status bar at the bottom
+        # Redraw image when resizing
+        self.canvas.bind("<Configure>", lambda _e: self._render_image())
+
+        # ----- Status bar -----
         self.status_var = tk.StringVar()
         self.status_bar = tk.Label(
             self.root,
             textvariable=self.status_var,
+            bg="#070b14",
+            fg=self.TEXT,
             anchor="w",
-            padx=10,
-            pady=5,
-            relief=tk.SUNKEN
+            padx=12,
+            pady=10
         )
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
-        # Whenever the canvas changes size (user resizes the window),
-        # redraw the image so it stays centred and scaled correctly.
-        self.canvas.bind("<Configure>", lambda _e: self._render_image())
+    # ------------------------ Controls ------------------------
 
     def _build_controls(self) -> None:
         """
-        Create all interactive controls:
-        - Buttons for instant effects
-        - Sliders for adjustable effects (with value labels)
-        - Resize slider + apply button
+        Build sidebar controls.
+
+        Important: We do NOT add extra feature buttons.
+        Only what the assignment requires:
+        - Grayscale
+        - Blur (adjustable)
+        - Edge detection
+        - Brightness (adjustable)
+        - Contrast (adjustable)
+        - Rotate (90/180/270)
+        - Flip (H/V)
+        - Resize/scale
         """
-        tk.Label(self.control_frame, text="Controls", font=("Segoe UI", 14, "bold")).pack(anchor="w", pady=(0, 10))
+        wrap = ttk.Frame(self.sidebar_inner, style="Card.TFrame")
+        wrap.pack(fill=tk.BOTH, expand=True, padx=12, pady=12)
 
-        # One-click buttons
-        tk.Button(self.control_frame, text="Grayscale", command=self.apply_grayscale).pack(fill=tk.X, pady=2)
-        tk.Button(self.control_frame, text="Edge Detection", command=self.apply_edges).pack(fill=tk.X, pady=2)
+        # Sidebar mini brand
+        brand_side = tk.Frame(wrap, bg=self.PANEL)
+        brand_side.pack(fill=tk.X, pady=(0, 12))
 
-      
-        # Rotation buttons
-        rotate_frame = tk.LabelFrame(self.control_frame, text="Rotate")
-        rotate_frame.pack(fill=tk.X, pady=8)
+        tk.Label(brand_side, text="AI", bg=self.PANEL, fg=self.ACCENT,
+                 font=("Segoe UI", 16, "bold")).pack(side=tk.LEFT)
+        tk.Label(brand_side, text=" Image Editor", bg=self.PANEL, fg=self.TEXT,
+                 font=("Segoe UI", 16, "bold")).pack(side=tk.LEFT)
+        tk.Label(brand_side, text="HIT137", bg=self.PANEL, fg=self.MUTED,
+                 font=("Segoe UI", 10, "bold")).pack(side=tk.RIGHT)
 
-        tk.Button(rotate_frame, text="90°", command=lambda: self.apply_rotate(90)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2, pady=4)
-        tk.Button(rotate_frame, text="180°", command=lambda: self.apply_rotate(180)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2, pady=4)
-        tk.Button(rotate_frame, text="270°", command=lambda: self.apply_rotate(270)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2, pady=4)
+        # -------- Quick actions --------
+        actions = ttk.LabelFrame(wrap, text="Quick Actions")
+        actions.pack(fill=tk.X, pady=(0, 12))
 
-        # Flip buttons
-        flip_frame = tk.LabelFrame(self.control_frame, text="Flip")
-        flip_frame.pack(fill=tk.X, pady=8)
+        ttk.Button(actions, text="Grayscale", command=self.apply_grayscale).pack(fill=tk.X, pady=6, padx=8)
+        ttk.Button(actions, text="Edge Detection", command=self.apply_edges).pack(fill=tk.X, pady=6, padx=8)
 
-        tk.Button(flip_frame, text="Horizontal", command=lambda: self.apply_flip("horizontal")).pack(fill=tk.X, padx=2, pady=2)
-        tk.Button(flip_frame, text="Vertical", command=lambda: self.apply_flip("vertical")).pack(fill=tk.X, padx=2, pady=2)
+        # -------- Rotate --------
+        rotate_frame = ttk.LabelFrame(wrap, text="Rotate")
+        rotate_frame.pack(fill=tk.X, pady=(0, 12))
 
-        # Adjustment sliders
-        slider_frame = tk.LabelFrame(self.control_frame, text="Adjustments")
-        slider_frame.pack(fill=tk.X, pady=10)
+        row = ttk.Frame(rotate_frame)
+        row.pack(fill=tk.X, padx=8, pady=8)
 
-        #  Blur
+        ttk.Button(row, text="90°", command=lambda: self.apply_rotate(90)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=4)
+        ttk.Button(row, text="180°", command=lambda: self.apply_rotate(180)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=4)
+        ttk.Button(row, text="270°", command=lambda: self.apply_rotate(270)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=4)
+
+        # -------- Flip --------
+        flip_frame = ttk.LabelFrame(wrap, text="Flip")
+        flip_frame.pack(fill=tk.X, pady=(0, 12))
+
+        ttk.Button(flip_frame, text="Horizontal", command=lambda: self.apply_flip("horizontal")).pack(fill=tk.X, pady=6, padx=8)
+        ttk.Button(flip_frame, text="Vertical", command=lambda: self.apply_flip("vertical")).pack(fill=tk.X, pady=6, padx=8)
+
+        # -------- Adjustments (sliders) --------
+        adjust = ttk.LabelFrame(wrap, text="Adjustments")
+        adjust.pack(fill=tk.X, pady=(0, 12))
+
+        # Blur
         self.blur_var = tk.IntVar(value=0)
-        self.blur_label = tk.Label(slider_frame, text="Blur: 0", anchor="w")
-        self.blur_label.pack(fill=tk.X)
+        self.blur_label = tk.Label(adjust, text="Blur: 0", bg=self.PANEL, fg=self.TEXT, font=("Segoe UI", 10, "bold"), anchor="w")
+        self.blur_label.pack(fill=tk.X, padx=10, pady=(10, 2))
 
         self.blur_scale = tk.Scale(
-            slider_frame,
-            from_=0,
-            to=50,
-            orient=tk.HORIZONTAL,
-            variable=self.blur_var,
-            # We hide Tkinter’s default value because it looks a bit clunky,
-            # and instead show the number in a cleaner label above.
-            showvalue=False
+            adjust, from_=0, to=50, orient=tk.HORIZONTAL,
+            variable=self.blur_var, showvalue=False,
+            bg=self.PANEL, fg=self.TEXT, troughcolor=self.BG,
+            highlightthickness=0
         )
-        self.blur_scale.pack(fill=tk.X)
+        self.blur_scale.pack(fill=tk.X, padx=10, pady=(0, 8))
 
-        # Brightness 
+        # Brightness
         self.bright_var = tk.IntVar(value=0)
-        self.bright_label = tk.Label(slider_frame, text="Brightness: 0", anchor="w")
-        self.bright_label.pack(fill=tk.X, pady=(6, 0))
+        self.bright_label = tk.Label(adjust, text="Brightness: 0", bg=self.PANEL, fg=self.TEXT, font=("Segoe UI", 10, "bold"), anchor="w")
+        self.bright_label.pack(fill=tk.X, padx=10, pady=(8, 2))
 
         self.bright_scale = tk.Scale(
-            slider_frame,
-            from_=-100,
-            to=100,
-            orient=tk.HORIZONTAL,
-            variable=self.bright_var,
-            showvalue=False
+            adjust, from_=-100, to=100, orient=tk.HORIZONTAL,
+            variable=self.bright_var, showvalue=False,
+            bg=self.PANEL, fg=self.TEXT, troughcolor=self.BG,
+            highlightthickness=0
         )
-        self.bright_scale.pack(fill=tk.X)
+        self.bright_scale.pack(fill=tk.X, padx=10, pady=(0, 8))
 
-        #Contrast 
+        # Contrast
+        # NOTE: 0..200 is correct; 100 = normal.
         self.contrast_var = tk.IntVar(value=100)
-        self.contrast_label = tk.Label(slider_frame, text="Contrast: 100", anchor="w")
-        self.contrast_label.pack(fill=tk.X, pady=(6, 0))
+        self.contrast_label = tk.Label(adjust, text="Contrast: 100", bg=self.PANEL, fg=self.TEXT, font=("Segoe UI", 10, "bold"), anchor="w")
+        self.contrast_label.pack(fill=tk.X, padx=10, pady=(8, 2))
 
         self.contrast_scale = tk.Scale(
-            slider_frame,
-            from_=0,
-            to=200,
-            orient=tk.HORIZONTAL,
-            variable=self.contrast_var,
-            showvalue=False
+            adjust, from_=0, to=200, orient=tk.HORIZONTAL,
+            variable=self.contrast_var, showvalue=False,
+            bg=self.PANEL, fg=self.TEXT, troughcolor=self.BG,
+            highlightthickness=0
         )
-        self.contrast_scale.pack(fill=tk.X)
+        self.contrast_scale.pack(fill=tk.X, padx=10, pady=(0, 10))
 
-        # Slider behaviour:
-        # We preview the effect while dragging,
-        # but only commit to history ONCE when the user releases the mouse.
+        # Slider session behaviour:
+        # - record base image on press
+        # - preview live during drag
+        # - push ONE undo state when release
         self.blur_scale.bind("<ButtonPress-1>", lambda _e: self._start_slider_edit("blur"))
         self.blur_scale.bind("<ButtonRelease-1>", lambda _e: self._commit_slider_edit())
 
@@ -270,89 +366,139 @@ class ImageEditorApp:
         self.contrast_scale.bind("<ButtonPress-1>", lambda _e: self._start_slider_edit("contrast"))
         self.contrast_scale.bind("<ButtonRelease-1>", lambda _e: self._commit_slider_edit())
 
-        # Whenever a slider value changes:
-        # - update the labels
-        # - preview the effect (if the user is actively dragging)
+        # Live updates
         self.blur_var.trace_add("write", lambda *_: self._on_slider_value_change())
         self.bright_var.trace_add("write", lambda *_: self._on_slider_value_change())
         self.contrast_var.trace_add("write", lambda *_: self._on_slider_value_change())
 
-        # Resize controls
-        resize_frame = tk.LabelFrame(self.control_frame, text="Resize / Scale")
-        resize_frame.pack(fill=tk.X, pady=10)
+        # -------- Resize --------
+        resize = ttk.LabelFrame(wrap, text="Resize / Scale")
+        resize.pack(fill=tk.X, pady=(0, 12))
 
         self.scale_var = tk.IntVar(value=100)
-        self.scale_label = tk.Label(resize_frame, text="Scale: 100%", anchor="w")
-        self.scale_label.pack(fill=tk.X)
+        self.scale_label = tk.Label(resize, text="Scale: 100%", bg=self.PANEL, fg=self.TEXT, font=("Segoe UI", 10, "bold"), anchor="w")
+        self.scale_label.pack(fill=tk.X, padx=10, pady=(10, 2))
 
-        tk.Scale(
-            resize_frame,
-            from_=10,
-            to=200,
-            orient=tk.HORIZONTAL,
-            variable=self.scale_var,
-            showvalue=False
-        ).pack(fill=tk.X)
-
-        # Update scale label as the user moves the slider
+        self.scale_scale = tk.Scale(
+            resize, from_=10, to=200, orient=tk.HORIZONTAL,
+            variable=self.scale_var, showvalue=False,
+            bg=self.PANEL, fg=self.TEXT, troughcolor=self.BG,
+            highlightthickness=0
+        )
+        self.scale_scale.pack(fill=tk.X, padx=10, pady=(0, 8))
         self.scale_var.trace_add("write", lambda *_: self._update_scale_label())
 
-        # Apply resize is intentionally a button:
-        # resizing can be expensive, so doing it live while dragging could feel laggy.
-        tk.Button(resize_frame, text="Apply Resize", command=self.apply_resize).pack(fill=tk.X, pady=6)
+        ttk.Button(resize, text="Apply Resize", command=self.apply_resize).pack(fill=tk.X, padx=10, pady=(2, 10))
 
-        # Reset sliders is a quick UX helper
-        tk.Button(self.control_frame, text="Reset Sliders", command=self.reset_sliders).pack(fill=tk.X, pady=6)
+        # Reset sliders (requested)
+        ttk.Button(wrap, text="Reset Sliders", command=self.reset_sliders).pack(fill=tk.X, pady=(0, 10))
 
-        # Ensure labels match initial values right from the start
+        # Ensure labels match defaults
         self._refresh_slider_labels()
 
-    #  Slider label helpers 
+    # ---------------- Slider helpers ----------------
 
     def _refresh_slider_labels(self) -> None:
-        """
-        Refresh all slider labels.
-
-        This keeps the sidebar feeling tidy and “live”
-        because the numbers always reflect the current slider positions.
-        """
+        """Keep slider labels in sync with current values."""
         self.blur_label.config(text=f"Blur: {int(self.blur_var.get())}")
         self.bright_label.config(text=f"Brightness: {int(self.bright_var.get())}")
         self.contrast_label.config(text=f"Contrast: {int(self.contrast_var.get())}")
         self.scale_label.config(text=f"Scale: {int(self.scale_var.get())}%")
 
     def _update_scale_label(self) -> None:
-        """
-        Update only the scale label.
-
-        This is separated because resize is applied by a button,
-        but the label should still update immediately when the slider changes.
-        """
+        """Update the scale label only (used when slider moves)."""
         self.scale_label.config(text=f"Scale: {int(self.scale_var.get())}%")
         self._update_status()
 
     def _on_slider_value_change(self) -> None:
         """
-        Called whenever blur/brightness/contrast values change.
-
-        Two responsibilities:
-        1) Update labels for a clean UI
-        2) Preview the active effect (only during an active drag session)
+        When a slider moves:
+        - update labels for a clean UI
+        - if user is actively dragging, preview the effect
         """
         self._refresh_slider_labels()
         self._preview_slider_effect()
 
-    # File actions 
+    def _start_slider_edit(self, slider_name: str) -> None:
+        """
+        Start a slider edit session.
+
+        We store the base image once so preview does not stack edits on edits.
+        That gives a smoother preview and avoids quality loss.
+        """
+        if not self._require_image():
+            return
+        self._active_slider = slider_name
+        self._slider_base_image = self.current_image.copy()
+
+    def _preview_slider_effect(self) -> None:
+        """
+        Live preview for the active slider.
+
+        We ONLY preview during an active slider drag session.
+        If no slider is active, moving programmatically (like reset) should not edit the image.
+        """
+        if self.current_image is None or self._slider_base_image is None or self._active_slider is None:
+            return
+
+        base = self._slider_base_image
+
+        if self._active_slider == "blur":
+            preview = self.processor.blur(base, int(self.blur_var.get()))
+        elif self._active_slider == "brightness":
+            preview = self.processor.adjust_brightness(base, int(self.bright_var.get()))
+        elif self._active_slider == "contrast":
+            # contrast range 0..200 works properly here (including low contrast)
+            preview = self.processor.adjust_contrast(base, int(self.contrast_var.get()))
+        else:
+            return
+
+        self.current_image = preview
+        self.is_modified = True
+        self.last_action = f"Adjusting {self._active_slider}"
+        self._update_info_from_image()
+        self._render_image()
+
+    def _commit_slider_edit(self) -> None:
+        """
+        Commit slider edits as ONE undo step.
+
+        Meaning:
+        - user drags the slider many times
+        - pressing Undo once returns to the image before the drag started
+        """
+        if self._slider_base_image is None:
+            self._active_slider = None
+            return
+
+        # Save the base image for Undo
+        self.history.push(self._slider_base_image)
+
+        self._slider_base_image = None
+        self._active_slider = None
+        self._update_info_from_image()
+        self._render_image()
+
+    def reset_sliders(self) -> None:
+        """
+        Reset slider values to defaults.
+
+        This resets controls only; it doesn't automatically revert the image.
+        Undo/Redo is still the correct way to revert image changes.
+        """
+        self.blur_var.set(0)
+        self.bright_var.set(0)
+        self.contrast_var.set(100)
+        self.scale_var.set(100)
+
+        self._refresh_slider_labels()
+        self.last_action = "Sliders reset"
+        self._update_status()
+
+    # ---------------- File actions ----------------
 
     def open_image(self) -> None:
-        """
-        Open an image file from disk.
-
-        When a new image is opened:
-        - history is cleared (undo/redo should not carry over)
-        - sliders reset
-        - status bar updates
-        """
+        """Open an image using a file dialog."""
         path = filedialog.askopenfilename(title="Open Image", filetypes=self.SUPPORTED_FORMATS)
         if not path:
             return
@@ -360,11 +506,13 @@ class ImageEditorApp:
         try:
             img = self.processor.read_image(path)
         except Exception as e:
-            messagebox.showerror("Open Error", f"Could not open image:\n{e}")
+            messagebox.showerror("Open Error", f"Could not open image:\n\n{e}")
             return
 
         self.current_image = img
         self.current_path = path
+
+        # Fresh state on new image
         self.history.clear()
         self.reset_sliders()
 
@@ -374,11 +522,7 @@ class ImageEditorApp:
         self._render_image()
 
     def save_image(self) -> None:
-        """
-        Save the image to the current file path.
-
-        If the file has not been saved before, we redirect to Save As.
-        """
+        """Save to the current path (or fallback to Save As if needed)."""
         if self.current_image is None:
             messagebox.showwarning("No Image", "Please open an image first.")
             return
@@ -394,10 +538,10 @@ class ImageEditorApp:
             messagebox.showinfo("Saved", "Image saved successfully.")
             self._update_status()
         except Exception as e:
-            messagebox.showerror("Save Error", f"Could not save image:\n{e}")
+            messagebox.showerror("Save Error", f"Could not save image:\n\n{e}")
 
     def save_as_image(self) -> None:
-        """Save the image to a new location chosen by the user."""
+        """Save image to a new path."""
         if self.current_image is None:
             messagebox.showwarning("No Image", "Please open an image first.")
             return
@@ -419,24 +563,19 @@ class ImageEditorApp:
             self._update_info_from_image()
             self._render_image()
         except Exception as e:
-            messagebox.showerror("Save As Error", f"Could not save image:\n{e}")
+            messagebox.showerror("Save As Error", f"Could not save image:\n\n{e}")
 
     def _on_exit(self) -> None:
-        """
-        Exit safely.
-
-        If the user has unsaved work, we show a confirmation message
-        to prevent accidental data loss.
-        """
+        """Exit safely, warning if there are unsaved changes."""
         if self.is_modified:
             if not messagebox.askyesno("Exit", "You have unsaved changes. Exit anyway?"):
                 return
         self.root.destroy()
 
-    # Undo/Redo
+    # ---------------- Undo / Redo ----------------
 
     def undo(self) -> None:
-        """Undo the last edit (if possible)."""
+        """Undo the last edit."""
         if self.current_image is None:
             return
 
@@ -452,7 +591,7 @@ class ImageEditorApp:
         self._render_image()
 
     def redo(self) -> None:
-        """Redo the last undone edit (if possible)."""
+        """Redo the last undone edit."""
         if self.current_image is None:
             return
 
@@ -467,14 +606,10 @@ class ImageEditorApp:
         self._update_info_from_image()
         self._render_image()
 
-    # Apply changes 
+    # ---------------- Apply effects ----------------
 
     def _require_image(self) -> bool:
-        """
-        Guard helper: makes sure an image exists before we apply effects.
-
-        This avoids crashes and gives a nicer user experience.
-        """
+        """Prevent crashes if user clicks controls before loading an image."""
         if self.current_image is None:
             messagebox.showwarning("No Image", "Please open an image first.")
             return False
@@ -482,18 +617,15 @@ class ImageEditorApp:
 
     def _apply_change(self, new_img: np.ndarray, action: str) -> None:
         """
-        Apply an edit and register it into undo history.
-
-        Flow:
-        - push current image into history (Undo support)
-        - set new image
-        - mark as modified
-        - refresh canvas + status bar
+        Apply an edit safely:
+        - store current image in history for Undo
+        - switch to new image
+        - refresh UI
         """
         if self.current_image is None:
             return
 
-        self.history.push(self.current_image)
+        self.history.push(self.current_image)  # correct method, not "<<"
         self.current_image = new_img
         self.is_modified = True
         self.last_action = action
@@ -502,118 +634,35 @@ class ImageEditorApp:
         self._render_image()
 
     def apply_grayscale(self) -> None:
-        """Convert the image to grayscale."""
         if not self._require_image():
             return
         self._apply_change(self.processor.to_grayscale(self.current_image), "Grayscale applied")
 
     def apply_edges(self) -> None:
-        """Apply edge detection to highlight boundaries in the image."""
         if not self._require_image():
             return
-        self._apply_change(self.processor.edges(self.current_image), "Edges applied")
+        self._apply_change(self.processor.edges(self.current_image), "Edge detection applied")
 
     def apply_rotate(self, angle: int) -> None:
-        """Rotate image by 90/180/270 degrees."""
         if not self._require_image():
             return
         self._apply_change(self.processor.rotate(self.current_image, angle), f"Rotated {angle}°")
 
     def apply_flip(self, mode: str) -> None:
-        """Flip the image horizontally or vertically."""
         if not self._require_image():
             return
         self._apply_change(self.processor.flip(self.current_image, mode), f"Flipped {mode}")
 
     def apply_resize(self) -> None:
-        """Resize image using the current scale percentage slider value."""
         if not self._require_image():
             return
         percent = int(self.scale_var.get())
         self._apply_change(self.processor.resize_scale(self.current_image, percent), f"Resized to {percent}%")
 
-    def reset_sliders(self) -> None:
-        """
-        Reset all slider values to defaults.
-
-        This only resets the UI controls.
-        It does not “undo” image changes — Undo/Redo is responsible for that.
-        """
-        self.blur_var.set(0)
-        self.bright_var.set(0)
-        self.contrast_var.set(100)
-        self.scale_var.set(100)
-        self._refresh_slider_labels()
-
-        self.last_action = "Sliders reset"
-        self._update_status()
-
-    # Slider preview
-
-    def _start_slider_edit(self, slider_name: str) -> None:
-        """
-        Start a slider edit session.
-
-        We store the current image as a "base image" so that preview effects apply cleanly.
-        Without this, the preview could stack repeatedly (which can reduce image quality).
-        """
-        if not self._require_image():
-            return
-        self._active_slider = slider_name
-        self._slider_base_image = self.current_image.copy()
-
-    def _preview_slider_effect(self) -> None:
-        """
-        Live preview for the active slider.
-
-        Very important behaviour:
-        - Only works during an active slider session
-        - It previews on top of the base image, not on top of previous previews
-        """
-        if self.current_image is None or self._slider_base_image is None or self._active_slider is None:
-            return
-
-        base = self._slider_base_image
-
-        if self._active_slider == "blur":
-            preview = self.processor.blur(base, int(self.blur_var.get()))
-        elif self._active_slider == "brightness":
-            preview = self.processor.adjust_brightness(base, int(self.bright_var.get()))
-        elif self._active_slider == "contrast":
-            preview = self.processor.adjust_contrast(base, int(self.contrast_var.get()))
-        else:
-            return
-
-        self.current_image = preview
-        self.is_modified = True
-        self.last_action = f"Adjusting {self._active_slider}"
-        self._update_info_from_image()
-        self._render_image()
-
-    def _commit_slider_edit(self) -> None:
-        """
-        Commit the slider edit as ONE undo step.
-
-        This makes Undo feel natural:
-        even if the user drags the slider a lot,
-        they only need to press Undo once to go back.
-        """
-        if self._slider_base_image is None:
-            self._active_slider = None
-            return
-
-        # Push the base state (image before slider drag) into history
-        self.history.push(self._slider_base_image)
-
-        self._slider_base_image = None
-        self._active_slider = None
-        self._update_info_from_image()
-        self._render_image()
-
-    # Display + status
+    # ---------------- Display + status ----------------
 
     def _update_info_from_image(self) -> None:
-        """Update filename and dimensions in the status bar."""
+        """Update filename and dimensions shown in the status bar."""
         if self.current_image is None:
             self.info = ImageInfo()
             self._update_status()
@@ -625,12 +674,7 @@ class ImageEditorApp:
         self._update_status()
 
     def _update_status(self) -> None:
-        """
-        Update the status bar text.
-
-        The status bar acts like a “quick feedback area”:
-        it helps the user understand what the app is doing.
-        """
+        """Update the status bar text. (No rendering here to avoid recursion issues.)"""
         modified = " (modified)" if self.is_modified else ""
         self.status_var.set(
             f"{self.info.filename}{modified} | {self.info.width} x {self.info.height} | "
@@ -640,49 +684,57 @@ class ImageEditorApp:
 
     def _render_image(self) -> None:
         """
-        Render the current image to the canvas.
+        Draw current image on the canvas.
 
-        Steps:
-        - clear the canvas
-        - convert image for display (BGR -> RGB)
-        - convert to PIL image
-        - resize to fit canvas while keeping aspect ratio
-        - draw on canvas and store PhotoImage reference
+        If no image is loaded, show a clean welcome screen in the center.
         """
         self._update_status()
         self.canvas.delete("all")
 
         if self.current_image is None:
+            cw = max(1, self.canvas.winfo_width())
+            ch = max(1, self.canvas.winfo_height())
+
+            # Big welcome text in the middle (no animation, so no recursion bug)
             self.canvas.create_text(
-                20, 20,
-                anchor="nw",
-                fill="white",
-                text="Open an image from File > Open to start.",
-                font=("Segoe UI", 12)
+                cw // 2, ch // 2 - 30,
+                text="Welcome 👋",
+                fill=self.TEXT,
+                font=("Segoe UI", 28, "bold"),
+                anchor="center"
+            )
+            self.canvas.create_text(
+                cw // 2, ch // 2 + 10,
+                text="Open an image from File → Open (Ctrl+O) to start editing.",
+                fill=self.MUTED,
+                font=("Segoe UI", 12),
+                anchor="center"
+            )
+            self.canvas.create_text(
+                cw // 2, ch // 2 + 40,
+                text="Tip: Use Undo/Redo from Edit menu or Ctrl+Z / Ctrl+Y.",
+                fill=self.MUTED,
+                font=("Segoe UI", 11),
+                anchor="center"
             )
             return
 
-        c_w = max(1, self.canvas.winfo_width())
-        c_h = max(1, self.canvas.winfo_height())
+        cw = max(1, self.canvas.winfo_width())
+        ch = max(1, self.canvas.winfo_height())
 
-        # Convert BGR -> RGB for display
+        # Convert BGR -> RGB for PIL/Tkinter
         rgb = self.processor.bgr_to_rgb(self.current_image)
         pil_img = Image.fromarray(rgb)
 
-        # Resize for canvas display (aspect ratio preserved)
-        pil_img = self._fit_to_canvas(pil_img, c_w, c_h)
+        # Fit image to canvas
+        pil_img = self._fit_to_canvas(pil_img, cw, ch)
 
-        # Keep a reference to avoid disappearing images
         self._tk_img = ImageTk.PhotoImage(pil_img)
-        self.canvas.create_image(c_w // 2, c_h // 2, image=self._tk_img, anchor="center")
+        self.canvas.create_image(cw // 2, ch // 2, image=self._tk_img, anchor="center")
 
     @staticmethod
     def _fit_to_canvas(pil_img: Image.Image, canvas_w: int, canvas_h: int) -> Image.Image:
-        """
-        Resize a PIL image to fit inside the canvas while preserving aspect ratio.
-
-        This prevents images from being stretched unnaturally.
-        """
+        """Resize image to fit inside canvas while preserving aspect ratio."""
         img_w, img_h = pil_img.size
         if img_w == 0 or img_h == 0:
             return pil_img
@@ -690,5 +742,4 @@ class ImageEditorApp:
         scale = min(canvas_w / img_w, canvas_h / img_h)
         new_w = max(1, int(img_w * scale))
         new_h = max(1, int(img_h * scale))
-
         return pil_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
