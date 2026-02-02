@@ -5,24 +5,24 @@ It follows the HIT137 requirements and includes a modern dark UI, undo/redo hist
 
 ---
 
-## ✅ Key Features (As Required)
+##  Key Features (As Required)
 
 This app includes **all 8 required image editing features**:
 
-- ✅ **Grayscale conversion**
-- ✅ **Gaussian Blur (Adjustable slider)**
-- ✅ **Edge Detection (Canny)**
-- ✅ **Brightness adjustment (Adjustable slider)**
-- ✅ **Contrast adjustment (Adjustable slider, 0–200)**
-- ✅ **Rotation** (90°, 180°, 270°)
-- ✅ **Flip** (Horizontal / Vertical)
-- ✅ **Resize / Scale** by percentage (10% – 200%)
+-  **Grayscale conversion**
+-  **Gaussian Blur (Adjustable slider)**
+-  **Edge Detection (Canny)**
+-  **Brightness adjustment (Adjustable slider)**
+-  **Contrast adjustment (Adjustable slider, 0–200)**
+-  **Rotation** (90°, 180°, 270°)
+-  **Flip** (Horizontal / Vertical)
+-  **Resize / Scale** by percentage (10% – 200%)
 
-> ⚠️ **No extra feature buttons were added** beyond the assignment requirements.
+
 
 ---
 
-## 🖥️ User Interface Highlights
+##  User Interface Highlights
 
 - **Modern dark theme**
 - **Colorful heading + “real app” look**
@@ -37,7 +37,7 @@ This app includes **all 8 required image editing features**:
 
 ---
 
-## 🧠 OOP Design (HIT137 Requirement)
+##  OOP Design (HIT137 Requirement)
 
 This project demonstrates strong OOP structure using multiple classes:
 
@@ -52,7 +52,7 @@ This separation makes the project:
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```text
 📦 AI-Image-Editor/
@@ -67,14 +67,14 @@ This separation makes the project:
 
 
 
-▶️ How to Run
+ How to Run
 1) Install dependencies
 pip install opencv-python pillow numpy
 
 2) Run the application
 python main.py
 
-⌨️ Shortcuts (Feels like a real desktop tool)
+ Shortcuts (Feels like a real desktop tool)
 
 Ctrl + O → Open image
 
@@ -93,9 +93,9 @@ Each edit stores a snapshot of the image in history.
 Slider effects preview live while dragging, but the final change is saved as one undo step.
 
 This means:
-✅ Drag 20 times → press Undo once → returns to state before drag started.
+ Drag 20 times → press Undo once → returns to state before drag started.
 
-✅ Testing Notes (What was checked)
+ Testing Notes (What was checked)
 
 Open/Save/Save As works correctly
 
@@ -111,7 +111,7 @@ slider edits
 
 resize/rotate/flip
 
-⚠️ Common Issue Fix (VS Code / NumPy / OpenCV not found)
+ Common Issue Fix (VS Code / NumPy / OpenCV not found)
 
 If you see something like:
 
@@ -119,7 +119,7 @@ ModuleNotFoundError: No module named numpy
 
 It usually means VS Code is using a different Python interpreter.
 
-✅ Fix it like this:
+Fix it like this:
 
 Open VS Code
 
