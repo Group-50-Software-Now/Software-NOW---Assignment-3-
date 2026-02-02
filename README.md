@@ -63,6 +63,8 @@ This separation makes the project:
 ├── history_manager.py    # Undo/Redo system
 └── README.md             # This file
 
+```
+
 
 
 ▶️ How to Run
