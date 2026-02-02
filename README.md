@@ -1,125 +1,64 @@
-# AI Image Editor
+# 🎨 AI Image Editor (Tkinter + OpenCV) — HIT137 Assignment 3
 
-## HIT137 – Software Now | Group Assignment 3
+A clean, professional **desktop image editor** built with **Python (Tkinter GUI + OpenCV image processing)**.  
+It follows the HIT137 requirements and includes a modern dark UI, undo/redo history, and adjustable sliders for effects.
 
-### Project Overview
+---
 
-This project is a desktop image editing application developed for HIT137 – Software Now (Group Assignment 3).
-The application demonstrates practical understanding of:
+## ✅ Key Features (As Required)
 
-1. Object-Oriented Programming (OOP)
-2. Tkinter GUI development
-3. Image processing using OpenCV
-4. Version control and collaboration using GitHub
+This app includes **all 8 required image editing features**:
 
-The focus of the project is to build a clean, user-friendly application while maintaining good software design, modular code structure, and readability.
+- ✅ **Grayscale conversion**
+- ✅ **Gaussian Blur (Adjustable slider)**
+- ✅ **Edge Detection (Canny)**
+- ✅ **Brightness adjustment (Adjustable slider)**
+- ✅ **Contrast adjustment (Adjustable slider, 0–200)**
+- ✅ **Rotation** (90°, 180°, 270°)
+- ✅ **Flip** (Horizontal / Vertical)
+- ✅ **Resize / Scale** by percentage (10% – 200%)
 
-## Technologies Used
+> ⚠️ **No extra feature buttons were added** beyond the assignment requirements.
 
-Python 3
-- Tkinter – Graphical User Interface
-- OpenCV (cv2) – Image processing
-- NumPy – Image data manipulation
-- Pillow (PIL) – Image rendering for Tkinter
-- GitHub – Version control and collaboration
+---
 
-## Project Structure
-assigment 3/
-- app.py                                # Main Tkinter GUI and application logic
- - image_processor.py                   # OpenCV image processing operations
- - history_manager.py                   # Undo / Redo functionality
- - main.py                              # Application entry point
-- requirements.txt                      # Required Python libraries
- - github_link.txt                      # GitHub repository link
- - README.md                            # Project documentation
+## 🖥️ User Interface Highlights
 
-##  Application Features
-###  Image Processing (OpenCV)
+- **Modern dark theme**
+- **Colorful heading + “real app” look**
+- **Scrollable left sidebar** (works well on smaller screens)
+- Clean slider labels (professional UI, no messy default Tk numbers)
+- Centered welcome screen when no image is loaded
+- Status bar showing:
+  - file name  
+  - image size  
+  - undo/redo availability  
+  - last action taken  
 
-The application supports the following image operations:
+---
 
-1. Grayscale conversion
-2. Gaussian blur (adjustable intensity)
-3. Edge detection (Canny algorithm)
-4. Brightness adjustment
-5. Contrast adjustment
-6. Image rotation (90°, 180°, 270°)
-7. Image flip (horizontal / vertical)
-8. Resize / scale by percentage
+## 🧠 OOP Design (HIT137 Requirement)
 
-All image processing logic is handled in a dedicated processing class, keeping the GUI code clean and maintainable.
+This project demonstrates strong OOP structure using multiple classes:
 
-##  Graphical User Interface (Tkinter)
+- `ImageEditorApp` → Handles GUI, user events, rendering, and workflow
+- `ImageProcessor` → Handles all OpenCV image operations (filters + transformations)
+- `HistoryManager` → Manages **Undo/Redo** states using stacks (clean and memory-limited)
 
-The GUI includes all required elements:
+This separation makes the project:
+- easier to understand  
+- easier to maintain  
+- aligned with professional software design  
 
-Main application window with proper sizing
+---
 
-### Menu bar:
+## 📁 Project Structure
 
-- File → Open, Save, Save As, Exit
-- Edit → Undo, Redo
-- Image display area using a Canvas
-- Control panel with buttons and sliders
-- Live slider previews for blur, brightness, and contrast
-
-### Status bar displaying:
-
-- File name
-- Image dimensions
-- Undo / Redo availability
-- Last performed action
-- Message boxes for errors, confirmations, and warnings
-
-##  Object-Oriented Design
-
-The application is structured using multiple classes to clearly demonstrate OOP principles:
-
-### Key Classes
-
-### ImageEditorApp
-Manages the GUI and user interactions
-
-### ImageProcessor
-Handles all OpenCV image processing logic
-
-### HistoryManager
-Manages undo and redo functionality
-
-### OOP Concepts Demonstrated
-
-- Classes and objects
-- Constructors
-- Instance and class attributes
-- Encapsulation
-- Method-based class interaction
-- Clear separation of responsibilities
-
-## How to Run the Application
-
-### 1️⃣ Install Required Libraries
-pip install -r requirements.txt
-
-### 2️⃣ Run the Application
-python main.py
-
-##  Group Work & GitHub Usage
-
-The project is maintained in a public GitHub repository
-
-- All group members are added as collaborators
-- Commits show continuous development from start to submission
-- GitHub is used to track progress, collaboration, and contributions
-- The repository link is provided in github_link.txt as required.
-
-##  Notes
-
-- Supported image formats: JPG, PNG, BMP
-- Images are processed internally using OpenCV (BGR format)
-- Conversion to RGB is done only for display in Tkinter
-- Undo / Redo allows safe experimentation with image edits
-- Code is documented with clear, human-readable docstrings and comments
-
-##  Conclusion
-This project demonstrates a complete Python desktop application that integrates GUI development, image processing, and object-oriented programming principles.
-The focus was on producing clean, readable, and maintainable code while delivering all required functionality in a user-friendly interface.
+```text
+📦 AI-Image-Editor/
+│
+├── main.py               # Entry point (starts the app)
+├── app.py                # Full GUI + sidebar controls + status bar
+├── image_processor.py    # OpenCV image processing logic
+├── history_manager.py    # Undo/Redo system
+└── README.md             # This file
