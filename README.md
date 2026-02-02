@@ -45,10 +45,7 @@ The purpose of this repository is to allow group members to **collaborate**, **s
 
 ---
 
-## Repository Structure (Example)
-
-
-##  Project Structure
+## Repository Structure 
 
 ```text
 📦 AI-Image-Editor/
