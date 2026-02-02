@@ -65,70 +65,22 @@ This separation makes the project:
 
 ```
 
-
-
- How to Run
+## How to Run
+```
 1) Install dependencies
 pip install opencv-python pillow numpy
 
+```
+```
 2) Run the application
 python main.py
+```
 
- Shortcuts (Feels like a real desktop tool)
+## Shortcuts (Feels like a real desktop tool)
 
-Ctrl + O → Open image
+- **Ctrl + O → Open image**
+- **Ctrl + S → Save**
+- **Ctrl + Shift + S → Save As**
+- **Ctrl + Z → Undo**
+- **Ctrl + Y → Redo**
 
-Ctrl + S → Save
-
-Ctrl + Shift + S → Save As
-
-Ctrl + Z → Undo
-
-Ctrl + Y → Redo
-
-📝 How Undo/Redo Works
-
-Each edit stores a snapshot of the image in history.
-
-Slider effects preview live while dragging, but the final change is saved as one undo step.
-
-This means:
- Drag 20 times → press Undo once → returns to state before drag started.
-
- Testing Notes (What was checked)
-
-Open/Save/Save As works correctly
-
-All filters operate properly
-
-Contrast reduction works correctly (low contrast values)
-
-Undo/Redo works for:
-
-one-click actions
-
-slider edits
-
-resize/rotate/flip
-
- Common Issue Fix (VS Code / NumPy / OpenCV not found)
-
-If you see something like:
-
-ModuleNotFoundError: No module named numpy
-
-It usually means VS Code is using a different Python interpreter.
-
-Fix it like this:
-
-Open VS Code
-
-Press: Ctrl + Shift + P
-
-Select: Python: Select Interpreter
-
-Choose the interpreter where you installed packages
-
-Run again
-
-.
