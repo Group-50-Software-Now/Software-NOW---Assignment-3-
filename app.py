@@ -240,8 +240,24 @@ class ImageEditorApp:
         # Redraw image when resizing
         self.canvas.bind("<Configure>", lambda _e: self._render_image())
 
+        # ----- Status bar -----
+        self.status_var = tk.StringVar()
+        self.status_bar = tk.Label(
+            self.root,
+            textvariable=self.status_var,
+            bg="#070b14",
+            fg=self.TEXT,
+            anchor="w",
+            padx=12,
+            pady=10
+        )
+        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
+        # ------------------------ Controls ------------------------
 
+    def _build_controls(self) -> None:
+        """
+        Build sidebar controls.
         Important: We do NOT add extra feature buttons.
         Only what the assignment requires:
         - Grayscale
