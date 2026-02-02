@@ -1,59 +1,57 @@
-This class stores snapshots of images so users can undo and redo changes.
-It uses two stacks:
-- undo stack: previous states
-- redo stack: states that were undone
+"""
+history_manager.py
 
-Important detail:
-We store COPY of the numpy array (img.copy()) so history states don't get
-accidentally modified when the current image changes.
+Undo/Redo system for the image editor.
+
+Why this file exists:
+- Undo/Redo is a separate concern from GUI and image processing
+- Keeping it isolated makes the code easier to test and maintain
+
+Design:
+- We store *copies* of images (numpy arrays)
+- Undo stack keeps the “past”
+- Redo stack keeps the “future” after undo
 """
 
 from __future__ import annotations
+
+from dataclasses import dataclass, field
 from typing import List, Optional
+
 import numpy as np
 
 
+@dataclass
 class HistoryManager:
     """
-    A small utility class that manages Undo/Redo stacks.
+    Manages Undo/Redo states.
 
-    The stacks are private to protect them from accidental outside modifications.
+    This class is deliberately small but robust:
+    - push(image) saves a snapshot for Undo
+    - undo(current) returns the previous snapshot
+    - redo(current) returns the next snapshot
+
+    Notes:
+    - We always store copies so later edits don't modify old history states.
+    - max_states prevents memory blow-ups if the user edits a lot.
     """
-    def __init__(self, max_states: int = 25) -> None:
-        """
-        Args:
-            max_states: Maximum number of undo states to keep in memory.
-        """
-        self.__undo_stack: List[np.ndarray] = []
-        self.__redo_stack: List[np.ndarray] = []
-        self.max_states = max_states
+    max_states: int = 25
+    _undo_stack: List[np.ndarray] = field(default_factory=list)
+    _redo_stack: List[np.ndarray] = field(default_factory=list)
 
-    def clear(self) -> None:
-    """Clear all history (useful when opening a new image)."""
-        self.__undo_stack.clear()
-        self.__redo_stack.clear()
+    # --------- "nice-to-have" OOP extras (clean but not overkill) ---------
 
-    def push(self, img: np.ndarray) -> None:
-        """
-        Save the current image state into undo history.
+    def __len__(self) -> int:
+        """Total number of stored states (undo + redo)."""
+        return len(self._undo_stack) + len(self._redo_stack)
 
-        Note:
-        - whenever a new change happens, redo history becomes invalid and is cleared.
-        """
-        if img is None:
-            return
-    self.__undo_stack.append(img.copy())
-        self.__redo_stack.clear()
+    @property
+    def undo_count(self) -> int:
+        """How many undo steps are available."""
+        return len(self._undo_stack)
 
-        # Keep memory under control
-        if len(self.__undo_stack) > self.max_states:
-            self.__undo_stack.pop(0)
-
-    def can_undo(self) -> bool:
-        """Return True if undo is possible."""
-        return len(self.__undo_stack) > 0
-
-    def can_redo(self) -> bool:
-        """Return True if redo is possible."""
-        return len(self.__redo_stack) > 0
+    @property
+    def redo_count(self) -> int:
+        """How many redo steps are available."""
+        return len(self._redo_stack)
 
