@@ -297,58 +297,7 @@ class ImageEditorApp:
         row = ttk.Frame(rotate_frame)
         row.pack(fill=tk.X, padx=8, pady=8)
 
-        ttk.Button(row, text="90°", command=lambda: self.apply_rotate(90)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=4)
-        ttk.Button(row, text="180°", command=lambda: self.apply_rotate(180)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=4)
-        ttk.Button(row, text="270°", command=lambda: self.apply_rotate(270)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=4)
-
-        # -------- Flip --------
-        flip_frame = ttk.LabelFrame(wrap, text="Flip")
-        flip_frame.pack(fill=tk.X, pady=(0, 12))
-
-        ttk.Button(flip_frame, text="Horizontal", command=lambda: self.apply_flip("horizontal")).pack(fill=tk.X, pady=6, padx=8)
-        ttk.Button(flip_frame, text="Vertical", command=lambda: self.apply_flip("vertical")).pack(fill=tk.X, pady=6, padx=8)
-
-        # -------- Adjustments (sliders) --------
-        adjust = ttk.LabelFrame(wrap, text="Adjustments")
-        adjust.pack(fill=tk.X, pady=(0, 12))
-
-        # Blur
-        self.blur_var = tk.IntVar(value=0)
-        self.blur_label = tk.Label(adjust, text="Blur: 0", bg=self.PANEL, fg=self.TEXT, font=("Segoe UI", 10, "bold"), anchor="w")
-        self.blur_label.pack(fill=tk.X, padx=10, pady=(10, 2))
-
-        self.blur_scale = tk.Scale(
-            adjust, from_=0, to=50, orient=tk.HORIZONTAL,
-            variable=self.blur_var, showvalue=False,
-            bg=self.PANEL, fg=self.TEXT, troughcolor=self.BG,
-            highlightthickness=0
-        )
-        self.blur_scale.pack(fill=tk.X, padx=10, pady=(0, 8))
-
-        # Brightness
-        self.bright_var = tk.IntVar(value=0)
-        self.bright_label = tk.Label(adjust, text="Brightness: 0", bg=self.PANEL, fg=self.TEXT, font=("Segoe UI", 10, "bold"), anchor="w")
-        self.bright_label.pack(fill=tk.X, padx=10, pady=(8, 2))
-
-        self.bright_scale = tk.Scale(
-            adjust, from_=-100, to=100, orient=tk.HORIZONTAL,
-            variable=self.bright_var, showvalue=False,
-            bg=self.PANEL, fg=self.TEXT, troughcolor=self.BG,
-            highlightthickness=0
-        )
-        self.bright_scale.pack(fill=tk.X, padx=10, pady=(0, 8))
-
-        # Contrast
-        # NOTE: 0..200 is correct; 100 = normal.
-        self.contrast_var = tk.IntVar(value=100)
-        self.contrast_label = tk.Label(adjust, text="Contrast: 100", bg=self.PANEL, fg=self.TEXT, font=("Segoe UI", 10, "bold"), anchor="w")
-        self.contrast_label.pack(fill=tk.X, padx=10, pady=(8, 2))
-
-        self.contrast_scale = tk.Scale(
-            adjust, from_=0, to=200, orient=tk.HORIZONTAL,
-            variable=self.contrast_var, showvalue=False,
-            bg=self.PANEL, fg=self.TEXT, troughcolor=self.BG,
-            highlightthickness=0
+        
         )
         self.contrast_scale.pack(fill=tk.X, padx=10, pady=(0, 10))
 
