@@ -54,4 +54,33 @@ class HistoryManager:
     def redo_count(self) -> int:
         """How many redo steps are available."""
         return len(self._redo_stack)
+# ---------------- Core API used by the GUI ----------------
+
+    def clear(self) -> None:
+        """Remove all saved states (usually called when opening a new image)."""
+        self._undo_stack.clear()
+        self._redo_stack.clear()
+
+    def can_undo(self) -> bool:
+        """True if Undo is currently possible."""
+        return len(self._undo_stack) > 0
+
+    def can_redo(self) -> bool:
+        """True if Redo is currently possible."""
+        return len(self._redo_stack) > 0
+
+    def push(self, img: np.ndarray) -> None:
+        """
+        Save a snapshot of the current image into undo history.
+
+        Important:
+        - Whenever we push a new edit, redo history becomes invalid,
+          because redo only makes sense after an undo.
+        """
+        self._undo_stack.append(img.copy())
+        self._redo_stack.clear()
+
+        # Keep memory usage controlled
+        if len(self._undo_stack) > self.max_states:
+            self._undo_stack.pop(0)
 
