@@ -357,47 +357,7 @@ class ImageEditorApp:
         # - preview live during drag
         # - push ONE undo state when release
         self.blur_scale.bind("<ButtonPress-1>", lambda _e: self._start_slider_edit("blur"))
-        self.blur_scale.bind("<ButtonRelease-1>", lambda _e: self._commit_slider_edit())
-
-        self.bright_scale.bind("<ButtonPress-1>", lambda _e: self._start_slider_edit("brightness"))
-        self.bright_scale.bind("<ButtonRelease-1>", lambda _e: self._commit_slider_edit())
-
-        self.contrast_scale.bind("<ButtonPress-1>", lambda _e: self._start_slider_edit("contrast"))
-        self.contrast_scale.bind("<ButtonRelease-1>", lambda _e: self._commit_slider_edit())
-
-        # Live updates
-        self.blur_var.trace_add("write", lambda *_: self._on_slider_value_change())
-        self.bright_var.trace_add("write", lambda *_: self._on_slider_value_change())
-        self.contrast_var.trace_add("write", lambda *_: self._on_slider_value_change())
-
-        # -------- Resize --------
-        resize = ttk.LabelFrame(wrap, text="Resize / Scale")
-        resize.pack(fill=tk.X, pady=(0, 12))
-
-        self.scale_var = tk.IntVar(value=100)
-        self.scale_label = tk.Label(resize, text="Scale: 100%", bg=self.PANEL, fg=self.TEXT, font=("Segoe UI", 10, "bold"), anchor="w")
-        self.scale_label.pack(fill=tk.X, padx=10, pady=(10, 2))
-
-        self.scale_scale = tk.Scale(
-            resize, from_=10, to=200, orient=tk.HORIZONTAL,
-            variable=self.scale_var, showvalue=False,
-            bg=self.PANEL, fg=self.TEXT, troughcolor=self.BG,
-            highlightthickness=0
-        )
-        self.scale_scale.pack(fill=tk.X, padx=10, pady=(0, 8))
-        self.scale_var.trace_add("write", lambda *_: self._update_scale_label())
-
-        ttk.Button(resize, text="Apply Resize", command=self.apply_resize).pack(fill=tk.X, padx=10, pady=(2, 10))
-
-        # Reset sliders (requested)
-        ttk.Button(wrap, text="Reset Sliders", command=self.reset_sliders).pack(fill=tk.X, pady=(0, 10))
-
-        # Ensure labels match defaults
-        self._refresh_slider_labels()
-
-    # ---------------- Slider helpers ----------------
-
-    def _refresh_slider_labels(self) -> None:
+        
         """Keep slider labels in sync with current values."""
         self.blur_label.config(text=f"Blur: {int(self.blur_var.get())}")
         self.bright_label.config(text=f"Brightness: {int(self.bright_var.get())}")
