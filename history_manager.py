@@ -83,4 +83,17 @@ class HistoryManager:
         # Keep memory usage controlled
         if len(self._undo_stack) > self.max_states:
             self._undo_stack.pop(0)
+    def undo(self, current_img: np.ndarray) -> Optional[np.ndarray]:
+        """
+        Undo one step.
+
+        We move:
+        - current image -> redo stack
+        - last undo state -> returned to the caller
+
+        Returns:
+            The previous image state, or None if nothing to undo.
+        """
+        if not self.can_undo():
+            return None
 
