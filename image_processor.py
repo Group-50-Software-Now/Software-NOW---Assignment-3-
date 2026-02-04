@@ -38,59 +38,45 @@ class ImageProcessor:
     DEFAULT_CANNY: Tuple[int, int] = (80, 160)
 
     def __init__(self) -> None:
-        """
-        Constructor.
-
-        The last_action attribute is useful for debugging
-        or for displaying status messages in the GUI.
-        """
+        # Keeping a "last action" string is useful for a status bar / debugging.
         self.last_action: str = "Ready"
 
-    
-    # File Input / Output
-    
+    # File I/O
 
     def read_image(self, path: str) -> np.ndarray:
         """
-        Read an image from disk using OpenCV.
-
-        Args:
-            path: Full file path to the image.
-
-        Returns:
-            Image as a NumPy array in BGR format.
+        Read an image from disk using OpenCV (BGR).
 
         Raises:
-            ValueError: If the image cannot be loaded.
+            ValueError if OpenCV cannot read the image.
         """
-          img = cv2.imread(path)
-
-        
-        # If OpenCV fails to read the image, img will be None
+        img = cv2.imread(path)
         if img is None:
-            raise ValueError(
-                "OpenCV could not read this image. "
-                "The file may be unsupported or corrupted."
-            )
-
+            raise ValueError("OpenCV could not read this image. File may be unsupported or corrupted.")
         self.last_action = "Opened image"
         return img
 
-    def write_image(self, path: str, img: np.ndarray) -> None:
+
+     def write_image(self, path: str, img: np.ndarray) -> None:
         """
         Save an image to disk using OpenCV.
 
-        Args:
-            path: Destination file path.
-            img: Image data in BGR format.
-
         Raises:
-            ValueError: If saving fails.
+            ValueError if OpenCV fails to write the image.
         """
         ok = cv2.imwrite(path, img)
-
-        # cv2.imwrite returns False if saving fails
         if not ok:
-            raise ValueError(
-                "OpenCV could not save the image. "
-               
+            raise ValueError("OpenCV could not save the image. Check the path and permissions.")
+        self.last_action = "Saved image"
+
+    # Display helpers 
+
+    @staticmethod
+    def bgr_to_rgb(img: np.ndarray) -> np.ndarray:
+        """
+        Convert BGR (OpenCV) to RGB (PIL/Tkinter).
+
+        We do this only for display.
+        We keep internal images in BGR so OpenCV operations remain consistent.
+        """
+        return img[:, :, ::-1]
