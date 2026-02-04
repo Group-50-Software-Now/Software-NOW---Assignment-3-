@@ -24,15 +24,14 @@ import numpy as np
 
 
 class ImageProcessor:
-    """
-    Image processing helper class using OpenCV.
+   """
+    Image processing helper using OpenCV.
 
-    Images are stored internally as:
-    - NumPy arrays
-    - BGR colour format (OpenCV default)
+    The application stores images in OpenCV's default format:
+    - numpy array
+    - BGR channel order
 
-    When images are displayed in Tkinter,
-    they are converted to RGB in the GUI layer.
+    When displaying in Tkinter, we convert BGR -> RGB.
     """
 
     # Default threshold values used for Canny edge detection
