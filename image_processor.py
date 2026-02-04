@@ -80,3 +80,35 @@ class ImageProcessor:
         We keep internal images in BGR so OpenCV operations remain consistent.
         """
         return img[:, :, ::-1]
+
+#  Required filters 
+
+    def to_grayscale(self, img: np.ndarray) -> np.ndarray:
+        """
+        Convert image to grayscale.
+
+        We convert back to BGR at the end so the rest of the app
+        can always assume a 3-channel image.
+        """
+        self.last_action = "Grayscale"
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        return cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+
+    def blur(self, img: np.ndarray, intensity: int) -> np.ndarray:
+        """
+        Apply Gaussian blur.
+
+        intensity is used as a kernel size (must be odd and >= 1).
+        """
+        self.last_action = f"Blur ({intensity})"
+        if intensity <= 0:
+            return img.copy()
+
+        # Kernel must be odd; if user gives even, shift it up by 1.
+        k = max(1, int(intensity))
+        if k % 2 == 0:
+            k += 1
+
+        return cv2.GaussianBlur(img, (k, k), 0)
+
+    def edges(self, img: np.ndarray, low: int = None, high: int = None) -> np.ndarray:
