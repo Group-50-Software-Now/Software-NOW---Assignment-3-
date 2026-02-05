@@ -24,7 +24,7 @@ import numpy as np
 
 
 class ImageProcessor:
-   """
+    """
     Image processing helper using OpenCV.
 
     The application stores images in OpenCV's default format:
@@ -34,14 +34,13 @@ class ImageProcessor:
     When displaying in Tkinter, we convert BGR -> RGB.
     """
 
-    # Default threshold values used for Canny edge detection
     DEFAULT_CANNY: Tuple[int, int] = (80, 160)
 
     def __init__(self) -> None:
         # Keeping a "last action" string is useful for a status bar / debugging.
         self.last_action: str = "Ready"
 
-    # File I/O
+    # ------------- File I/O -------------
 
     def read_image(self, path: str) -> np.ndarray:
         """
@@ -56,8 +55,7 @@ class ImageProcessor:
         self.last_action = "Opened image"
         return img
 
-
-     def write_image(self, path: str, img: np.ndarray) -> None:
+    def write_image(self, path: str, img: np.ndarray) -> None:
         """
         Save an image to disk using OpenCV.
 
@@ -69,7 +67,7 @@ class ImageProcessor:
             raise ValueError("OpenCV could not save the image. Check the path and permissions.")
         self.last_action = "Saved image"
 
-    # Display helpers 
+    # ------------- Display helpers -------------
 
     @staticmethod
     def bgr_to_rgb(img: np.ndarray) -> np.ndarray:
@@ -81,7 +79,7 @@ class ImageProcessor:
         """
         return img[:, :, ::-1]
 
-#  Required filters 
+    # ------------- Required filters -------------
 
     def to_grayscale(self, img: np.ndarray) -> np.ndarray:
         """
@@ -112,7 +110,7 @@ class ImageProcessor:
         return cv2.GaussianBlur(img, (k, k), 0)
 
     def edges(self, img: np.ndarray, low: int = None, high: int = None) -> np.ndarray:
- """
+        """
         Apply Canny edge detection and return result as BGR.
 
         We convert to grayscale first because Canny works best that way,
@@ -127,9 +125,7 @@ class ImageProcessor:
         return cv2.cvtColor(e, cv2.COLOR_GRAY2BGR)
 
     def adjust_brightness(self, img: np.ndarray, value: int) -> np.ndarray:
-
-
- """
+        """
         Adjust brightness.
 
         A value range of about -100..100 is usually usable.
@@ -151,8 +147,7 @@ class ImageProcessor:
         return cv2.convertScaleAbs(img, alpha=alpha, beta=0)
 
     def rotate(self, img: np.ndarray, angle: int) -> np.ndarray:
-
- """Rotate image by 90, 180, or 270 degrees."""
+        """Rotate image by 90, 180, or 270 degrees."""
         self.last_action = f"Rotate ({angle})"
         if angle == 90:
             return cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
@@ -170,8 +165,8 @@ class ImageProcessor:
         if mode == "vertical":
             return cv2.flip(img, 0)
         return img.copy()
-       
- def resize_scale(self, img: np.ndarray, percent: int) -> np.ndarray:
+
+    def resize_scale(self, img: np.ndarray, percent: int) -> np.ndarray:
         """Resize image by percentage (10..200 recommended)."""
         percent = int(percent)
         percent = max(10, min(200, percent))
