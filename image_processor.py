@@ -154,3 +154,15 @@ class ImageProcessor:
         if mode == "vertical":
             return cv2.flip(img, 0)
         return img.copy()
+       
+ def resize_scale(self, img: np.ndarray, percent: int) -> np.ndarray:
+        """Resize image by percentage (10..200 recommended)."""
+        percent = int(percent)
+        percent = max(10, min(200, percent))
+        self.last_action = f"Resize ({percent}%)"
+
+        h, w = img.shape[:2]
+        new_w = max(1, int(w * (percent / 100.0)))
+        new_h = max(1, int(h * (percent / 100.0)))
+
+        return cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
