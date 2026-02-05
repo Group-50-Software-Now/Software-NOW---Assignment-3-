@@ -698,4 +698,48 @@ class ImageEditorApp:
             self.canvas.create_text(
                 cw // 2, ch // 2 - 30,
                 text="Welcome 👋",
-                
+            fill=self.TEXT,
+                font=("Segoe UI", 28, "bold"),
+                anchor="center"
+            )
+            self.canvas.create_text(
+                cw // 2, ch // 2 + 10,
+                text="Open an image from File → Open (Ctrl+O) to start editing.",
+                fill=self.MUTED,
+                font=("Segoe UI", 12),
+                anchor="center"
+            )
+            self.canvas.create_text(
+                cw // 2, ch // 2 + 40,
+                text="Tip: Use Undo/Redo from Edit menu or Ctrl+Z / Ctrl+Y.",
+                fill=self.MUTED,
+                font=("Segoe UI", 11),
+                anchor="center"
+            )
+            return
+
+        cw = max(1, self.canvas.winfo_width())
+        ch = max(1, self.canvas.winfo_height())
+
+        # Convert BGR -> RGB for PIL/Tkinter
+        rgb = self.processor.bgr_to_rgb(self.current_image)
+        pil_img = Image.fromarray(rgb)
+
+        # Fit image to canvas
+        pil_img = self._fit_to_canvas(pil_img, cw, ch)
+
+        self._tk_img = ImageTk.PhotoImage(pil_img)
+        self.canvas.create_image(cw // 2, ch // 2, image=self._tk_img, anchor="center")
+
+    @staticmethod
+    def _fit_to_canvas(pil_img: Image.Image, canvas_w: int, canvas_h: int) -> Image.Image:
+        """Resize image to fit inside canvas while preserving aspect ratio."""
+        img_w, img_h = pil_img.size
+        if img_w == 0 or img_h == 0:
+            return pil_img
+
+        scale = min(canvas_w / img_w, canvas_h / img_h)
+        new_w = max(1, int(img_w * scale))
+        new_h = max(1, int(img_h * scale))
+        return pil_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+    
