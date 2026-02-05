@@ -112,3 +112,26 @@ class ImageProcessor:
         return cv2.GaussianBlur(img, (k, k), 0)
 
     def edges(self, img: np.ndarray, low: int = None, high: int = None) -> np.ndarray:
+
+ """
+        Adjust brightness.
+
+        A value range of about -100..100 is usually usable.
+        """
+        self.last_action = f"Brightness ({value})"
+        return cv2.convertScaleAbs(img, alpha=1.0, beta=int(value))
+
+    def adjust_contrast(self, img: np.ndarray, value: int) -> np.ndarray:
+        """
+        Adjust contrast.
+
+        value is in range 0..200 where:
+        - 100 means normal contrast
+        - <100 reduces contrast (flatter)
+        - >100 increases contrast (stronger)
+        """
+        self.last_action = f"Contrast ({value})"
+        alpha = max(0.0, float(value) / 100.0)
+        return cv2.convertScaleAbs(img, alpha=alpha, beta=0)
+
+    def rotate(self, img: np.ndarray, angle: int) -> np.ndarray:
