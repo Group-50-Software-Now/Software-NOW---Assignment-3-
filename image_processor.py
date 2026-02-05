@@ -112,6 +112,23 @@ class ImageProcessor:
         return cv2.GaussianBlur(img, (k, k), 0)
 
     def edges(self, img: np.ndarray, low: int = None, high: int = None) -> np.ndarray:
+ """
+        Apply Canny edge detection and return result as BGR.
+
+        We convert to grayscale first because Canny works best that way,
+        then convert back to BGR so the GUI stays consistent.
+        """
+        self.last_action = "Edges"
+        if low is None or high is None:
+            low, high = self.DEFAULT_CANNY
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        e = cv2.Canny(gray, int(low), int(high))
+        return cv2.cvtColor(e, cv2.COLOR_GRAY2BGR)
+
+    def adjust_brightness(self, img: np.ndarray, value: int) -> np.ndarray:
+        """
+
 
  """
         Adjust brightness.
