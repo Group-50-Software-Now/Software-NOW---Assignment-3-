@@ -1,18 +1,20 @@
 """
 main.py
 
-This is the entry point of the application.
+Entry point for the HIT137 Image Editor application.
 
-Keeping this file small is intentional:
-- It makes the project easy to understand (one clear starting point)
-- The GUI logic stays inside app.py where it belongs
+This file stays intentionally small:
+- It creates the GUI app
+- It starts the Tkinter event loop
+
+Keeping this separate makes the project structure cleaner and easier to mark.
 """
 
 from app import ImageEditorApp
 
 
 def main() -> None:
-    """Create the app object and start the Tkinter main loop."""
+    """Create the app and run it."""
     app = ImageEditorApp()
     app.run()
 
