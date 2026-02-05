@@ -97,3 +97,14 @@ class HistoryManager:
         if not self.can_undo():
             return None
 
+        self._redo_stack.append(current_img.copy())
+        return self._undo_stack.pop()
+
+    def redo(self, current_img: np.ndarray) -> Optional[np.ndarray]:
+        """
+        Redo one step.
+
+        We move:
+        - current image -> undo stack
+        - last redo state -> returned to the caller
+
