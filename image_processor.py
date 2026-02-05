@@ -135,3 +135,22 @@ class ImageProcessor:
         return cv2.convertScaleAbs(img, alpha=alpha, beta=0)
 
     def rotate(self, img: np.ndarray, angle: int) -> np.ndarray:
+
+ """Rotate image by 90, 180, or 270 degrees."""
+        self.last_action = f"Rotate ({angle})"
+        if angle == 90:
+            return cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+        if angle == 180:
+            return cv2.rotate(img, cv2.ROTATE_180)
+        if angle == 270:
+            return cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        return img.copy()
+
+    def flip(self, img: np.ndarray, mode: str) -> np.ndarray:
+        """Flip image: mode is 'horizontal' or 'vertical'."""
+        self.last_action = f"Flip ({mode})"
+        if mode == "horizontal":
+            return cv2.flip(img, 1)
+        if mode == "vertical":
+            return cv2.flip(img, 0)
+        return img.copy()
