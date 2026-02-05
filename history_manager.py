@@ -54,7 +54,7 @@ class HistoryManager:
     def redo_count(self) -> int:
         """How many redo steps are available."""
         return len(self._redo_stack)
-# ---------------- Core API used by the GUI ----------------
+    # ---------------- Core API used by the GUI ----------------
 
     def clear(self) -> None:
         """Remove all saved states (usually called when opening a new image)."""
@@ -83,6 +83,7 @@ class HistoryManager:
         # Keep memory usage controlled
         if len(self._undo_stack) > self.max_states:
             self._undo_stack.pop(0)
+
     def undo(self, current_img: np.ndarray) -> Optional[np.ndarray]:
         """
         Undo one step.
@@ -96,6 +97,7 @@ class HistoryManager:
         """
         if not self.can_undo():
             return None
+        
 
         self._redo_stack.append(current_img.copy())
         return self._undo_stack.pop()
@@ -107,8 +109,8 @@ class HistoryManager:
         We move:
         - current image -> undo stack
         - last redo state -> returned to the caller
-
-         Returns:
+        
+        Returns:
             The next image state, or None if nothing to redo.
         """
         if not self.can_redo():
@@ -116,4 +118,5 @@ class HistoryManager:
 
         self._undo_stack.append(current_img.copy())
         return self._redo_stack.pop()
+
 
