@@ -127,7 +127,6 @@ class ImageProcessor:
         return cv2.cvtColor(e, cv2.COLOR_GRAY2BGR)
 
     def adjust_brightness(self, img: np.ndarray, value: int) -> np.ndarray:
-        """
 
 
  """
