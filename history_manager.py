@@ -108,3 +108,12 @@ class HistoryManager:
         - current image -> undo stack
         - last redo state -> returned to the caller
 
+         Returns:
+            The next image state, or None if nothing to redo.
+        """
+        if not self.can_redo():
+            return None
+
+        self._undo_stack.append(current_img.copy())
+        return self._redo_stack.pop()
+
